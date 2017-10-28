@@ -1,0 +1,74 @@
+/* your styles go here */
+.full_width_container{
+    width: 100%;
+}
+
+.listing .table-responsive .dataTables_wrapper .row{
+    width: 100%;
+    margin: 10px;
+}
+
+.listing .dataTables_wrapper .row #list_length{
+    display: none;
+}
+
+li.paginate_button {
+  position: relative;
+  display: block;
+  padding: 0.5rem 0.75rem;
+  margin-left: -1px;
+  line-height: 1.25;
+  color: #0275d8;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  cursor: pointer;
+}
+
+li.paginate_button a{
+  color: #23527c; 
+  text-decoration: none;
+}
+
+.paginate_button.active, .paginate_button.active:hover{
+  z-index: 2;
+  color: #fff;
+  background-color: #0275d8;
+  border-color: #0275d8;
+}
+
+.paginate_button.active a{
+  color: #fff;
+}
+
+.paginate_button.disabled{
+  color: #636c72;
+  pointer-events: none;
+  cursor: not-allowed;
+  background-color: #fff;
+  border-color: #ddd;
+}
+
+.paginate_button.disabled a{
+  color: #777;
+  pointer-events: none;
+  cursor: not-allowed;
+}
+
+.paginate_button:focus, .paginate_button:hover {
+  color: #014c8c;
+  text-decoration: none;
+  background-color: #eceeef;
+  border-color: #ddd;
+}
+
+.pagination > li:first-child{
+    margin-left: 0;
+    border-top-left-radius: 4px;
+    border-bottom-left-radius: 4px;
+}
+
+.pagination > li:last-child{
+    margin-left: 0;
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
+}
