@@ -23,7 +23,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
                   <div class="logo">
                     <h1>Login</h1>
                   </div>
-                  <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit.</p>
+                  <p>PASS..........</p>
                 </div>
               </div>
             </div>

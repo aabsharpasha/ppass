@@ -1,11 +1,12 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 ?>
+
 <footer class="main-footer">
   <div class="container-fluid">
     <div class="row">
       <div class="col-sm-6">
-        <p>Your company &copy; 2017-2019</p>
+        <p>PPASS &copy; 2017-2019</p>
       </div>
       <div class="col-sm-6 text-right">
         <!--<p>Design by <a href="https://bootstrapious.com/admin-templates" class="external">Bootstrapious</a></p>-->
@@ -14,3 +15,8 @@ defined('BASEPATH') OR exit('No direct script access allowed');
     </div>
   </div>
 </footer>
+       </div>
+      </div>
+    </div>
+      </body>
+</html>

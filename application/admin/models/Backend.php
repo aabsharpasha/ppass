@@ -5,15 +5,22 @@ class Backend extends CI_Model {
           parent::__construct();
         }
   function insert_data($data,$table){
+    try {
       $this->db->insert($table, $data);
+
+      return true;
+    } catch(exception $e) {
+     
+      return false;
+    }
   }
   
   function get_data($table,$limit=NULL,$start, $search=NULL){
       $this->db->select('*');
       $this->db->from($table);
       if(!empty($search)){
-         $this->db->like('title', $search);
-         $this->db->or_like('audio_url', $search);
+         $this->db->like('vendor_name', $search);
+         $this->db->or_like('vendor_address', $search);
       }
       if(!empty($limit)){
         $this->db->limit($limit, $start);
@@ -31,8 +38,8 @@ class Backend extends CI_Model {
       $this->db->select('*');
       $this->db->from($table);
       if(!empty($search)){
-         $this->db->like('title', $search);
-         $this->db->or_like('audio_url', $search);
+         $this->db->like('vendor_name', $search);
+         $this->db->or_like('vendor_address', $search);
       }
       $query = $this->db->get();
       $num = $query->num_rows();

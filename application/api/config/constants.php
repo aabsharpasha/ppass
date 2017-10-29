@@ -16,6 +16,7 @@ define('NO_RECORD_FOUND', "No record Found.");
 define('INSUFF_DATA', "Insufficient data. Check missing madatory params.");
 define('SUCCESS_STATUS', "success");
 define('FAIL_STATUS', "fail");
+
 /*
 |--------------------------------------------------------------------------
 | File and Directory Modes

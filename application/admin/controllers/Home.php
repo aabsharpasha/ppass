@@ -21,6 +21,6 @@ class Home extends CI_Controller {
 	public function index()
 	{
             $this->session->unset_userdata('active_user');
-            $this->load->view('frontend/home');
+            $this->load->view('vendor/home');
 	}
 }
