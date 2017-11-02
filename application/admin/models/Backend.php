@@ -14,6 +14,34 @@ class Backend extends CI_Model {
       return false;
     }
   }
+
+  function update_data($data, $table, $where) {
+    try {
+      if($this->db->update($table, $data, $where)) {
+        return true;
+      } else 
+      return false;
+
+      
+    } catch(exception $e) {
+     
+      return false;
+    }
+  }
+
+   function delete_data($table, $where) {
+    try {
+      if($this->db->delete($table, $where)) {
+        return true;
+      } else 
+      return false;
+
+      
+    } catch(exception $e) {
+     
+      return false;
+    }
+  }
   
   function get_data($table,$limit=NULL,$start, $search=NULL){
       $this->db->select('*');
@@ -44,5 +72,18 @@ class Backend extends CI_Model {
       $query = $this->db->get();
       $num = $query->num_rows();
       return $num;
+  }
+
+  function get_data_by_cond($table, $where){
+      $this->db->select('*');
+      $this->db->from($table);
+      $this->db->where($where);
+      $query = $this->db->get();
+      $num = $query->num_rows();
+      if($num > 0){
+        return $query->row();
+      } else {
+        return '';
+      }
   }
 }

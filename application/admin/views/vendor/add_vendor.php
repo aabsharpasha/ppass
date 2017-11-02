@@ -15,32 +15,33 @@ defined('BASEPATH') OR exit('No direct script access allowed');
           <!-- Forms Section-->
           <section class="forms"> 
           <div class=""><?php echo validation_errors('<li>', '</li>') ?></div>
-                <form class="form-horizontal" name="add_vendor" action="<?php echo base_url('vendor/add_vendor') ?>" method="post">
+                <form class="form-horizontal" name="add_vendor" action="<?php echo  (isset($vendor->vendor_id) ? base_url('vendor/edit_vendor') : base_url('vendor/add_vendor')) ?>" method="post">
                     <div class="form-group">
                         <label class="control-label col-sm-2" for="vendor_name">Vendor Name</label>
                          <div class="col-sm-10">
-                             <input type="text" class="form-control" id="vendor_name" name="vendor_name" placeholder="Vendor Name" value="<?php echo set_value('vendor_name') ?>" required>
+                             <input type="text" class="form-control" id="vendor_name" name="vendor_name" placeholder="Vendor Name" value="<?php echo set_value('vendor_name', $vendor->vendor_name) ?>" required>
                         </div>
                     </div>
                     <div class="form-group">
                         <label class="control-label col-sm-2" for="vendor_email">Vendor Email</label>
                          <div class="col-sm-10">
-                        <input type="email" class="form-control" id="vendor_email" placeholder="Vendor Email" name="vendor_email" value="<?php echo set_value('vendor_email') ?>">
+                        <input type="email" class="form-control" id="vendor_email" placeholder="Vendor Email" name="vendor_email" value="<?php echo set_value('vendor_email', $vendor->vendor_email) ?>">
                         </div>
                     </div>
                      <div class="form-group">
                         <label class="control-label col-sm-2" for="vendor_address">Vendor Address</label>
                           <div class="col-sm-10">
-                        <input type="text" class="form-control" id="vendor_address" placeholder="Vendor Address" name="vendor_address" value="<?php echo set_value('vendor_address') ?>" required>
+                        <input type="text" class="form-control" id="vendor_address" placeholder="Vendor Address" name="vendor_address" value="<?php echo set_value('vendor_address', $vendor->vendor_address) ?>" required>
                         </div>
                     </div>
                      <div class="form-group">
                         <label class="control-label col-sm-2" for="inputPassword">Vendor Lat/Long</label>
                           <div class="col-sm-10">
-                           <input type="text" class="form-control" id="vendor_lat" placeholder="Vendor Lat" name="vendor_lat" value="<?php echo set_value('vendor_lat') ?>" required>
+                           <input type="text" class="form-control" id="vendor_lat" placeholder="Vendor Lat" name="vendor_lat" value="<?php echo set_value('vendor_lat', $vendor->vendor_lat) ?>" required>
                         
                           
-                        <input type="text" class="form-control" id="vendor_long" placeholder="Vendor Long" name="vendor_long" value="<?php echo set_value('vendor_long') ?>" required>
+                        <input type="text" class="form-control" id="vendor_long" placeholder="Vendor Long" name="vendor_long" value="<?php echo set_value('vendor_long', $vendor->vendor_long) ?>" required>
+                        <input type="hidden" name="vendor_id" value="<?php echo $vendor->vendor_id ?>" />
                          </div>
                     </div>
  <div class="form-group">
