@@ -12,8 +12,10 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 |
 */
 defined('SHOW_DEBUG_BACKTRACE') OR define('SHOW_DEBUG_BACKTRACE', TRUE);
-define('NO_RECORD_FOUND', "No record Found.");
-define('INSUFF_DATA', "Insufficient data. Check missing madatory params.");
+define('MSG301', "No record Found.");
+define('MSG302', "Insufficient data or Parameter key mismatch. Check missing mandatory params.");
+define('MSG303', "Login failed. Please enter correct credentials.");
+define('MSG304', "Failed.");
 define('SUCCESS_STATUS', "success");
 define('FAIL_STATUS', "fail");
 

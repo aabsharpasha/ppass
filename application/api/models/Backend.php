@@ -5,9 +5,24 @@ class Backend extends CI_Model {
           parent::__construct();
         }
   function insert_data($data,$table){
-      $this->db->insert($table, $data);
+     return $this->db->insert($table, $data);
   }
   
+
+  function update_data($data, $table, $where) {
+    try {
+      if($this->db->update($table, $data, $where)) {
+        return true;
+      } else {
+        return false;
+      }
+      
+    } catch(exception $e) {
+     
+      return false;
+    }
+  }
+
   function get_data($table,$limit=NULL,$start, $search=NULL){
       $this->db->select('*');
       $this->db->from($table);

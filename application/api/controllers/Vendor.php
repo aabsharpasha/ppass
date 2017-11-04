@@ -26,31 +26,31 @@ class Vendor extends REST_Controller {
                 'userName',
                 'password'
                 );
-            /*
-             * TO SET DEFAULT VARIABLE VALUES...
-             */
-            $MESSAGE = INSUFF_DATA;
-            $STATUS = FAIL_STATUS;
-
+         
             if (checkselectedparams($this->post(), $allowParam)) {
-                $MESSAGE = NO_RECORD_FOUND;
-                $STATUS = FAIL_STATUS;
                 $res = $this->usermodel->login($this->post('userName'), md5($this->post('password')), $this->post('vendorId'));
 
                 if (!empty($res)) {
+                    $responseCode = 200;
                     $MESSAGE = "Logged in Successfully";
-                    $STATUS = SUCCESS_STATUS;
+                } else {
+                    $responseCode = 303;
+                    $MESSAGE = MSG303;
                 }
+            } else {
+                $responseCode = 302;
+                $MESSAGE = MSG302;
             }
 
+            
             $resp = array( 
                         'responseMessage' => $MESSAGE,
-                        'status'          => $STATUS,
-                    );
-            if($res) {
+                        'responseCode'    => $responseCode
+                     );
+             if($res) {
                 $resp['userId'] = $res->user_id;
                 $resp['vendorId'] = $res->vendor_id;
-            }
+             } 
            
             $this->response($resp, 200);
         } catch (Exception $ex) {
@@ -61,7 +61,6 @@ class Vendor extends REST_Controller {
 
     function checkin_vendor_post() {
             try {
-
                 $allowParam = array(
                 'userId',
                 'venderId',
@@ -69,49 +68,140 @@ class Vendor extends REST_Controller {
                 'pin',
                 'goodsSize'
                 );
-            /*
-             * TO SET DEFAULT VARIABLE VALUES...
-             */
-            $MESSAGE = INSUFF_DATA;
-            $STATUS = FAIL_STATUS;
+          
+                if (checkselectedparams($this->post(), $allowParam)) {
+                    if(strlen($this->post('pin')) != 4) {
+                        $MESSAGE = 'Pin must be 4 digit.';
+                        $responseCode = 304;
+                    } else  if(strlen($this->post('tokenNumber')) != 4) {
+                        $MESSAGE = 'Vehicle number must be last 4 digit.';
+                        $responseCode = 304;
+                    } else {
+                        $this->load->library('userauth');
+                        $where = array('vehicle_no' => $this->post('tokenNumber'), 'is_checkout' => '0');
+                        if(!$this->userauth->is_exist_data('checkin_details', $where)) {
 
-            if (checkselectedparams($this->post(), $allowParam)) {
-                
-
-                if(strlen($this->post('pin')) != 4) {
-                    $res = 0;
-                    $MESSAGE = 'Pin must be 4 digit.';
-                    $STATUS = FAIL_STATUS;
-                } else  {
-                    $res = $this->usermodel->checkin_vendor_insert($this->post());
-                    if($res == 0) {
-                        $MESSAGE = 'Pin already exist. Please select another pin.';
-                        $STATUS = FAIL_STATUS;
+                            $res = $this->usermodel->checkin_vendor_insert($this->post());
+                            if ($res) {
+                                $MESSAGE = "Checked In Successfully";
+                                $responseCode = 200;
+                             } else {
+                                $MESSAGE = MSG304;
+                                $responseCode = 304;
+                             }
+                        } else {
+                            $MESSAGE = 'Vehichle already in parking.';
+                            $responseCode = 304;
+                        }
                     }
+                } else {
+                    $MESSAGE = MSG302;
+                    $responseCode = 302;
                 }
-                
-
-                if ($res) {
-                    $MESSAGE = "Checked In Successfully";
-                    $STATUS = SUCCESS_STATUS;
-                }
+               
+                $resp = array( 
+                            'responseMessage' => $MESSAGE,
+                            'responseCode'    => $responseCode
+                        );
+               
+                $this->response($resp, 200);
+            } catch (Exception $ex) {
+                throw new Exception('Error in VendorLogin function - ' . $ex);
             }
-
-            $resp = array( 
-                        'responseMessage' => $MESSAGE,
-                        'status'          => $STATUS,
-                    );
-           
-           
-            $this->response($resp, 200);
-        } catch (Exception $ex) {
-            throw new Exception('Error in VendorLogin function - ' . $ex);
-        }
     }
 
-    /*
-     * TO BOOK RESTAURANT TABLE FOR WEB...
-     */
+   function gettokendetails_post() {
 
+        try {
+                $allowParam = array(
+                'venderId',
+                'tokenNumber'
+                );
+                
+                if (checkselectedparams($this->post(), $allowParam)) {
+                    
+                        $vendor_id = $this->post('venderId');
+                        $vehicle_no = $this->post('tokenNumber');
+                        $where = array('vendor_id' => $vendor_id, 'vehicle_no' => $vehicle_no, 'is_checkout' => '0');
+                        $row = $this->usermodel->get_data('checkin_details', $where);
+                        if($row) {
+                             $MESSAGE = "Details populated successfully";
+                             $responseCode = 200;
+                        } else {
+                            $MESSAGE = 'Invalid Vehichle No.';
+                            $responseCode = 304;
+                        }
+                    
+                } else {
+                    $MESSAGE = MSG302;
+                    $responseCode = 302;
+                }
+               
+                $resp = array( 
+                            'responseMessage' => $MESSAGE,
+                            'responseCode'    => $responseCode
+                        );
+
+                if($row) {
+                    $usage = $this->usermodel->calculate_bill_amount($row);
+                    $resp['tokenNumber'] = $row->vehicle_no;
+                    $resp['pin'] = $row->pin;
+                    $resp['mobileNumber'] = $row->mobile;
+                    $resp['billAmount'] = $usage['billAmount'];
+                    $resp['durationOccupied'] = $usage['durationOccupied'];
+                    $resp['checkInTime'] = $row->checkin_time;
+                    $resp['transactionId'] = $row->checkin_id;
+                }
+                $this->response($resp, 200);
+            } catch (Exception $ex) {
+                throw new Exception('Error in VendorLogin function - ' . $ex);
+            }
+   }
+
+   function checkout_post() {
+         try {
+                $allowParam = array(
+                'userId',
+                'venderId',
+                'tokenNumber',
+                'transactionId',
+                'paymentMode',
+                );
+                
+                if (checkselectedparams($this->post(), $allowParam)) {
+                    $vendor_id = $this->post('venderId');
+                    $vehicle_no = $this->post('tokenNumber');
+                    $where = array('vendor_id' => $vendor_id, 'vehicle_no' => $vehicle_no);
+                    $row = $this->usermodel->get_data('checkin_details', $where);
+                    if($row) {
+                         if($this->usermodel->checkout($this->post(), $row)) {
+                            $MESSAGE = "Checkout completed.";
+                            $responseCode = 200;   
+                         } else {
+                            $MESSAGE = "Checkout failed try again!";
+                            $responseCode = 304;
+                         }
+                         
+                    } else {
+                        $MESSAGE = 'Invalid Vehichle No.';
+                        $responseCode = 304;
+                    }
+                } else {
+                    $MESSAGE = MSG302;
+                    $responseCode = 302;
+                }
+               
+                $resp = array( 
+                            'responseMessage' => $MESSAGE,
+                            'responseCode'    => $responseCode
+                        );
+
+               
+                $this->response($resp, 200);
+            } catch (Exception $ex) {
+                throw new Exception('Error in VendorLogin function - ' . $ex);
+            }
+
+   }
     
 }

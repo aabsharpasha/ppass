@@ -8,6 +8,7 @@ class Userauth {
           $this->CI->load->helper('url');
           $this->CI->config->item('base_url');
           $this->CI->load->library('session');
+          $this->CI->load->model('usermodel');
         }
 
         public function authentication($role=NULL)
@@ -18,5 +19,9 @@ class Userauth {
           } elseif(($active_user->user_type != 'admin') && ($active_user->user_type != $role)){
             redirect(base_url());
           }
+        }
+
+        public function is_exist_data($table, $where) {
+          return $this->CI->usermodel->is_exist_data($table, $where);
         }
 }
