@@ -244,10 +244,13 @@ class Vendor extends REST_Controller {
                         
                         
                 } else {
-                        $MESSAGE = MSG302;
-                        $responseCode = 302;
+                        $MESSAGE = 'Error in photo';
+                        $responseCode = 304;
                 }
 
+            } else {
+                 $MESSAGE = MSG302;
+                  $responseCode = 302;
             }
             $resp = array(
                 'responseMessage' => $MESSAGE,
