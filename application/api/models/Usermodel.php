@@ -126,7 +126,6 @@ class Usermodel extends CI_Model {
   }
 
   function checkout($post, $row) {
-    //print_r($row); exit;
     $this->load->model('Backend');
     $paid_amount = $post['forceCheckout'] ? $post['receivedAmount'] : $row->bill_amount;
     $data = array(
@@ -150,5 +149,29 @@ class Usermodel extends CI_Model {
     }
   }
 
+  function updateProfilePic($filename, $post) {
+      $this->load->model('Backend');
+      $data = array(
+        'photo' => $filename,
+        'mobile'=> $post['mobileNumber'],
+      );
+      $where = array('checkin_id' => $post['transactionId']);
+      $res = $this->Backend->update_data($data, 'checkin_details', $where);
+      if($res) {
+        //echo $this->db->last_query(); exit;
+        return true;
+      } else {
+        return false;
+      }
+  }
+
+  function send_sms($post) {
+    $data = $this->get_data('checkin_details', array('checkin_id' => $post['transactionId']));
+    if($data) {
+      return $data;
+    } else {
+      return false;
+    }
+  }
 
 }

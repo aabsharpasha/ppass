@@ -18,6 +18,9 @@ define('MSG303', "Login failed. Please enter correct credentials.");
 define('MSG304', "Failed.");
 define('SUCCESS_STATUS', "success");
 define('FAIL_STATUS', "fail");
+define('UPLOAD_PATH', "./uploads/");
+
+
 
 /*
 |--------------------------------------------------------------------------

@@ -146,7 +146,9 @@ class Vendor extends REST_Controller {
                     $usage = $this->usermodel->calculate_bill_amount($row);
                     $resp['tokenNumber'] = $row->vehicle_no;
                     $resp['pin'] = $row->pin;
-                    $resp['mobileNumber'] = $row->mobile;
+                    if($row->mobile) {
+                        $resp['mobileNumber'] = $row->mobile;
+                    }
                     $resp['billAmount'] = $usage['billAmount'];
                     $resp['durationOccupied'] = $usage['durationOccupied'];
                     $resp['checkInTime'] = $row->checkin_time;
@@ -203,5 +205,93 @@ class Vendor extends REST_Controller {
             }
 
    }
+
+   function forgotpin_post() {
+       try {
+            $allowParam = array(
+            'transactionId',
+            'mobileNumber'
+            );
+            if (checkselectedparams($this->post(), $allowParam)) {
+                   
+                if (isset($_FILES['photo']) && $_FILES['photo']['name'] != '') {
+
+                    $config['upload_path']   = UPLOAD_PATH; 
+                    $config['allowed_types'] = 'gif|jpg|png|jpeg'; 
+                    // $config['max_size']      = 4000; 
+                    // $config['max_width']     = 1024; 
+                    // $config['max_height']    = 768;  
+                    $this->load->library('upload', $config);
+                      // print_r($this->upload->do_upload('photo')); 
+                      // print_r($this->upload->display_errors());
+                      // exit;
+                
+               
+                    if ($this->upload->do_upload('photo')) {
+                        $uploaded_files = $this->upload->data();
+                        $update_res = $this->usermodel->updateProfilePic($uploaded_files['file_name'], $this->post());
+                        if($update_res) {
+                              $MESSAGE = "Data captured.";
+                            $responseCode = 200;   
+                         } else {
+                            $MESSAGE = "Data not captured.";
+                            $responseCode = 304;
+                         }
+                    } else {
+                        $MESSAGE = strip_tags($this->upload->display_errors());
+                        $responseCode = 304;
+                    }
+                        
+                        
+                } else {
+                        $MESSAGE = MSG302;
+                        $responseCode = 302;
+                }
+
+            }
+            $resp = array(
+                'responseMessage' => $MESSAGE,
+                'responseCode'    => $responseCode,
+            );
+              
+         $this->response($resp, 200);
+        } catch (Exception $ex) {
+            throw new Exception('Error in VendorLogin function - ' . $ex);
+        }
+    }
+
+    function resetpin_post() {
+         try {
+            $allowParam = array(
+            'transactionId',
+            );
+            if (checkselectedparams($this->post(), $allowParam)) {
+                $update_res = $this->usermodel->send_sms($this->post());
+                if($update_res) {
+                    $first_one = substr($update_res->mobile, 0, 1);
+                    $last_three = substr($update_res->mobile, 7, 3);
+                    $mobile_new = $first_one."xxxxxx".$last_three;
+                    $MESSAGE = "Pin has been sent to your mobile number(".$mobile_new.").";
+                    $responseCode = 200;   
+                 } else {
+                    $MESSAGE = "Pin could not be sent. Try again!";
+                    $responseCode = 304;
+                 }
+            } else {
+                        $MESSAGE = MSG302;
+                        $responseCode = 302;
+            }
+
+            $resp = array(
+                'responseMessage' => $MESSAGE,
+                'responseCode'    => $responseCode,
+            );
+              
+            $this->response($resp, 200);
+        } catch (Exception $ex) {
+            throw new Exception('Error in VendorLogin function - ' . $ex);
+        }
+    }
+    
     
 }
