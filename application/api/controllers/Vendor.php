@@ -209,11 +209,14 @@ class Vendor extends REST_Controller {
    function forgotpin_post() {
        try {
             $allowParam = array(
-            'transactionId',
-            'mobileNumber'
+           // 'transactionId',
+            'otherInfo'
             );
-            if (checkselectedparams($this->post(), $allowParam)) {
-                   
+	    $post = json_decode(json_encode($this->post('otherInfo')));
+//	print_r($post); exit;
+            if (1) {
+                //echo '{hi}'; exit;   
+//print_r($_FILES['photo']); exit;
                 if (isset($_FILES['photo']) && $_FILES['photo']['name'] != '') {
 
                     $config['upload_path']   = UPLOAD_PATH; 
@@ -221,15 +224,16 @@ class Vendor extends REST_Controller {
                     // $config['max_size']      = 4000; 
                     // $config['max_width']     = 1024; 
                     // $config['max_height']    = 768;  
-                    $this->load->library('upload', $config);
-                      // print_r($this->upload->do_upload('photo')); 
-                      // print_r($this->upload->display_errors());
-                      // exit;
+	              $this->load->library('upload', $config);
+           /*            print_r($this->upload->do_upload('photo')); 
+                      print_r($this->upload->display_errors());
+                       exit;*/
                 
                
                     if ($this->upload->do_upload('photo')) {
                         $uploaded_files = $this->upload->data();
-                        $update_res = $this->usermodel->updateProfilePic($uploaded_files['file_name'], $this->post());
+//print_r($uploaded_files); exit;
+                        $update_res = $this->usermodel->updateProfilePic($uploaded_files['file_name'], $post);
                         if($update_res) {
                               $MESSAGE = "Data captured.";
                             $responseCode = 200;   
