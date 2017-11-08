@@ -19,4 +19,6 @@ class Userauth {
             redirect(base_url());
           }
         }
+
+      
 }

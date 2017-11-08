@@ -13,7 +13,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
                 <div class="col-lg-12">
                    <div class="card">
                     <div class="card-header d-flex align-items-center">
-                      <h3 class="h4">Vendor List</h3>
+                      <h3 class="h4">Pricing</h3>
                     </div>
                     <div class="table-responsive">
                      <?php 
@@ -24,14 +24,16 @@ defined('BASEPATH') OR exit('No direct script access allowed');
                           <strong>Success!</strong><?php echo $message ?>
                       </div>
                       <?php } ?>
-                       <a href="<?php echo base_url('vendor/add_vendor') ?>" class="btn btn-default">Add Vendor</a>
+                       <a href="<?php echo base_url('vendor/add_pricing') ?>" class="btn btn-default">Add New Pricing</a>
                       <table id="list" class="table table-striped table-bordered" cellspacing="0" width="100%">
                         <thead>
                           <tr>
                             <th>#</th>
-                            <th>Vendor Id</th>
-                            <th>Vendor Name</th>
-                            <th>Vendor Address</th>
+                            <th>Vendor</th>
+                            <th>Big Inventory</th>
+                            <th>Big Pricing</th>
+                            <th>Small Inventory</th>
+                            <th>Small Pricing</th>
                             <th>Action</th>
                           </tr>
                         </thead>
@@ -71,7 +73,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
             //"stateSave": true,
             //"pagingType": "full_numbers",
             "ajax": {
-              "url": "<?php echo base_url('vendor/get_json_data'); ?>",
+              "url": "<?php echo base_url('vendor/get_json_data_pricing'); ?>",
               "type": "POST",
               "data": function (response) {
                   //console.log(response)

@@ -150,10 +150,6 @@ class Usermodel extends CI_Model {
   }
 
   function updateProfilePic($filename, $post) {
-//print_r($post); exit;
-//echo '{hi}';
-//$post = json_decode($post);
-//print_r($post);
       $this->load->model('Backend');
       $data = array(
         'photo' => $filename,
@@ -164,7 +160,6 @@ class Usermodel extends CI_Model {
       $res = $this->Backend->update_data($data, 'checkin_details', $where);
 
      return true;
-//print_r(array($this->db->last_query())); exit;
       if($res) {
         //echo $this->db->last_query(); exit;
         return true;

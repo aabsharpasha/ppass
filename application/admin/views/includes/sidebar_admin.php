@@ -12,16 +12,26 @@ defined('BASEPATH') OR exit('No direct script access allowed');
             </div>
           </div>
           <!-- Sidebar Navidation Menus-->
+          <?php
+          $uri = $this->uri->segment(2);
+          if($uri == 'add_vendor' || $uri == 'edit_vendor' || $uri == 'listing') {
+            $class_vendor = 'active';
+          } else {
+            $class= '';
+          }
+          ?>
           <ul class="list-unstyled">
-            <li class="active"> <a href="<?php echo base_url(); ?>"><i class="icon-home"></i>Home</a></li>
-            <li><a href="#dashvariants" aria-expanded="false" data-toggle="collapse"> <i class="icon-interface-windows"></i>Vendor </a>
+            <li class="<?php echo ($uri == 'add_vendor' || $uri == 'edit_vendor' || $uri == 'listing' ? 'active' : '') ?>"><a  href="<?php echo base_url('vendor') ?>"><i class="icon-interface-windows"></i>Manage Vendor</a></li>
+                <li class="<?php echo ($uri == 'add_user' || $uri == 'edit_user' || $uri == 'users' ? 'active' : '') ?>"><a href="<?php echo base_url('vendor/users') ?>"><i class="icon-interface-windows"></i>Manage User</a></li>
+                <li class="<?php echo ($uri == 'add_pricing' || $uri == 'edit_pricing' || $uri == 'pricing' ? 'active' : '') ?>"><a href="<?php echo base_url('vendor/pricing') ?>"><i class="icon-interface-windows"></i>Manage Pricing</a></li>
+            <!-- <li><a href="#dashvariants" aria-expanded="false" data-toggle="collapse"> <i class="icon-interface-windows"></i>Vendor </a>
               <ul id="dashvariants" class="collapse list-unstyled">
                 <li><a href="<?php echo base_url('vendor') ?>">Manage Vendor</a></li>
-                <li><a href="#">Manage User</a></li>
-                <li><a href="#">Page</a></li>
-                <li><a href="#">Page</a></li>
+                <li><a href="<?php echo base_url('vendor/users') ?>">Manage User</a></li>
+                <li><a href="<?php echo base_url('vendor/pricing') ?>">Manage Pricing</a></li>
+               <!--  <li><a href="#">Page</a></li> 
               </ul>
-            </li>
+            </li> -->
             <!-- <li> <a href="tables.html"> <i class="icon-grid"></i>Tables </a></li>
             <li> <a href="charts.html"> <i class="fa fa-bar-chart"></i>Charts </a></li>
             <li> <a href="forms.html"> <i class="icon-padnote"></i>Forms </a></li>

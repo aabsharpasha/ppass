@@ -25,4 +25,11 @@ class User extends CI_Model {
       
       return $res;
   }
+
+  function get_data($table, $where) {
+    $rows = $this->db->get_where($table, $where);
+
+    return $rows->row();
+  }
+
 }

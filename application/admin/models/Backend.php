@@ -43,9 +43,11 @@ class Backend extends CI_Model {
     }
   }
   
-  function get_data($table,$limit=NULL,$start, $search=NULL){
+  function get_data($table,$limit=NULL,$start = NULL, $search=NULL, $where = array()){
       $this->db->select('*');
       $this->db->from($table);
+     if($where)
+      $this->db->where($where);
       if(!empty($search)){
          $this->db->like('vendor_name', $search);
          $this->db->or_like('vendor_address', $search);
