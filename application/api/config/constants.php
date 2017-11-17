@@ -15,7 +15,7 @@ defined('SHOW_DEBUG_BACKTRACE') OR define('SHOW_DEBUG_BACKTRACE', TRUE);
 define('MSG301', "No record Found.");
 define('MSG302', "Insufficient data or Parameter key mismatch. Check missing mandatory params.");
 define('MSG303', "Login failed. Please enter correct credentials.");
-define('MSG304', "Failed.");
+define('MSG300', "Failed.");
 define('SUCCESS_STATUS', "success");
 define('FAIL_STATUS', "fail");
 define('UPLOAD_PATH', "./uploads/");

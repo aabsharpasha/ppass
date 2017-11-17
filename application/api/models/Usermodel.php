@@ -153,7 +153,6 @@ class Usermodel extends CI_Model {
     if($res) {
       $where = array('checkin_id' => $post['transactionId']);
       $this->Backend->update_data(array('is_checkout' => '1'), 'checkin_details', $where);
-      //echo $this->db->last_query(); exit;
       return true;
     } else {
       return false;
@@ -172,30 +171,25 @@ class Usermodel extends CI_Model {
 
      return true;
       if($res) {
-        //echo $this->db->last_query(); exit;
         return true;
       } else {
         return false;
       }
   }
 
-  function send_sms($post) {
-    $data = $this->get_data('checkin_details', array('checkin_id' => $post['transactionId']));
-    //print_r($data); exit;
-    if($data) {
-      $text = urlencode('Your pin is '.$data->pin);
-      $url = "https://mobilnxt.in/api/push?accesskey=VPWEHZOk1bBokhQofLZNbQMMxSRNGF&to=".$data->mobile."&text=".$text."&from=VACTST";
-      $res = json_decode(file_get_contents($url));
-     // print_r($res); exit;
-      if($res->status = 'success') {
-        return true;
+  function send_sms($mobile, $text) {
+      if($mobile) {
+        $text = urlencode($text);
+        $url = "https://mobilnxt.in/api/push?accesskey=VPWEHZOk1bBokhQofLZNbQMMxSRNGF&to=".$mobile."&text=".$text."&from=VACTST";
+        $res = json_decode(file_get_contents($url));
+        if($res->status == 'success') {
+          return true;
+        } else {
+          return false;
+        }
       } else {
         return false;
       }
-      //print_r($res); exit;
-          } else {
-      return false;
-    }
   }
 
 }
