@@ -48,7 +48,7 @@ class Usermodel extends CI_Model {
                 'user_id'       => $post['userId'],
                 'vehicle_no'    => $post['tokenNumber'],
                 'pin'           => $post['pin'],
-                'vehicle_model' => $post['tokenNumber1'],
+                'vehicle_model' => $post['fullTokenNumber'],
                 'mobile'        => $post['mobileNumber'],
                 'vehicle_size'  => $post['goodsSize'],
                 'checkin_time'  => date("Y-m-d H:i:s"),
@@ -86,39 +86,50 @@ class Usermodel extends CI_Model {
     return $rows->row();
   }
 
+  function get_data_array($table, $where) {
+    $rows = $this->db->get_where($table, $where);
+
+    return $rows->result();
+  }
+
   function calculate_bill_amount($row) {
       $checkin_time = $row->checkin_time;
       $vendor_id = $row->vendor_id;
       $vehicle_size = $row->vehicle_size;
 
       $pricing_row = $this->get_pricing_details($vendor_id);
-      if($vehicle_size == 1) {
+      if ($vehicle_size == 1) {
+        $first_x_hour = $pricing_row->small_first_hours;
+        $first_x_hour_rate= $pricing_row->small_first_hr_rate;
         $rate_applied = $pricing_row->small_hourly_rate;
       } else if($vehicle_size == 2) {
+        $first_x_hour = $pricing_row->big_first_hours;
+        $first_x_hour_rate= $pricing_row->big_first_hr_rate;
         $rate_applied = $pricing_row->big_hourly_rate;
       }
-      $duration_occupied = number_format((time() - strtotime($row->checkin_time)) / 60);
+      
+      $duration_occupied_in_hr = ceil(number_format((time() - strtotime($row->checkin_time)) / 60 * 60));
       $price_in_minute = number_format($rate_applied / 60, 2);
-      $bill_amount = $duration_occupied * $price_in_minute;
+      if ($duration_occupied_in_hr > $first_x_hour) {
+        $bill_amount = $first_x_hour_rate + (($duration_occupied_in_hr - $first_x_hour) * $rate_applied);
+      } else {
+        $bill_amount = $first_x_hour_rate;
+      }
 
-      if($duration_occupied >= 60) {
+      $duration_occupied = number_format((time() - strtotime($row->checkin_time)) / 60);
+      if ($duration_occupied >= 60) {
         $duration_occupied = floor($duration_occupied/60)." Hr ".($duration_occupied%60). " Minutes";
       } else {
         $duration_occupied = $duration_occupied." Minutes";
-        $bill_amount = $rate_applied;
       }
-      
-
       $return_arr['billAmount'] = number_format($bill_amount);
       $return_arr['durationOccupied'] = $duration_occupied;
-      
       $this->load->model('Backend');
       $data['bill_amount'] = number_format($bill_amount);
       $data['duration_occupied'] = $duration_occupied;
       $this->Backend->update_data($data, 'checkin_details', array('checkin_id' => $row->checkin_id));
 
       return $return_arr;
-
   }
 
   function get_pricing_details($vendor_id) {
@@ -152,7 +163,7 @@ class Usermodel extends CI_Model {
   function updateProfilePic($filename, $post) {
       $this->load->model('Backend');
       $data = array(
-        'photo' => $filename,
+        'photo' => ($filename ? $filename : 'no-photo'),
         'mobile'=> $post->mobileNumber,
       );
 
@@ -170,9 +181,19 @@ class Usermodel extends CI_Model {
 
   function send_sms($post) {
     $data = $this->get_data('checkin_details', array('checkin_id' => $post['transactionId']));
+    //print_r($data); exit;
     if($data) {
-      return $data;
-    } else {
+      $text = urlencode('Your pin is '.$data->pin);
+      $url = "https://mobilnxt.in/api/push?accesskey=VPWEHZOk1bBokhQofLZNbQMMxSRNGF&to=".$data->mobile."&text=".$text."&from=VACTST";
+      $res = json_decode(file_get_contents($url));
+     // print_r($res); exit;
+      if($res->status = 'success') {
+        return true;
+      } else {
+        return false;
+      }
+      //print_r($res); exit;
+          } else {
       return false;
     }
   }

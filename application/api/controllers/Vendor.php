@@ -78,12 +78,19 @@ class Vendor extends REST_Controller {
                         $responseCode = 304;
                     } else {
                         $this->load->library('userauth');
-                        $where = array('vehicle_no' => $this->post('tokenNumber'), 'is_checkout' => '0');
-                        if(!$this->userauth->is_exist_data('checkin_details', $where)) {
-
+                        $vechicle_size = $this->post('goodsSize');
+                        if($this->post('fullTokenNumber')) {
+                            $where = array('vehicle_model' => $this->post('fullTokenNumber'), 'is_checkout' => '0', 'vehicle_size' => $vechicle_size);
+                            $resExist = $this->userauth->is_exist_data('checkin_details', $where);
+                        }  else {
+                            $where = array('vehicle_no' => $this->post('tokenNumber'), 'is_checkout' => '0', 'vehicle_size' => $vechicle_size);
+                            $resExist = $this->userauth->is_exist_data('checkin_details', $where);
+                        }
+//echo $this->db->last_query(); exit;
+                         if(!$resExist) {
                             $res = $this->usermodel->checkin_vendor_insert($this->post());
                             if ($res) {
-                                $MESSAGE = "Checked In Successfully";
+                                $MESSAGE = "Check-in Success";
                                 $responseCode = 200;
                              } else {
                                 $MESSAGE = MSG304;
@@ -123,8 +130,9 @@ class Vendor extends REST_Controller {
                         $vendor_id = $this->post('venderId');
                         $vehicle_no = $this->post('tokenNumber');
                         $where = array('vendor_id' => $vendor_id, 'vehicle_no' => $vehicle_no, 'is_checkout' => '0');
-                        $row = $this->usermodel->get_data('checkin_details', $where);
-                        if($row) {
+                        $rows = $this->usermodel->get_data_array('checkin_details', $where);
+                        //print_r($rows); exit;
+                        if($rows) {
                              $MESSAGE = "Details populated successfully";
                              $responseCode = 200;
                         } else {
@@ -142,17 +150,24 @@ class Vendor extends REST_Controller {
                             'responseCode'    => $responseCode
                         );
 
-                if($row) {
-                    $usage = $this->usermodel->calculate_bill_amount($row);
-                    $resp['tokenNumber'] = $row->vehicle_no;
-                    $resp['pin'] = $row->pin;
-                    if($row->mobile) {
-                        $resp['mobileNumber'] = $row->mobile;
+                if($rows) {
+                    foreach($rows as $row) {
+                        $usage = $this->usermodel->calculate_bill_amount($row);
+                        $response = array();
+                        $response['tokenNumber'] = $row->vehicle_no;
+                        $response['pin'] = $row->pin;
+                        if($row->mobile) {
+                            $response['mobileNumber'] = $row->mobile;
+                        }
+                        $response['billAmount'] = $usage['billAmount'];
+                        $response['durationOccupied'] = $usage['durationOccupied'];
+                        $response['checkInTime'] = $row->checkin_time;
+                        $response['transactionId'] = $row->checkin_id;
+                        $response['vehicleType'] = ($row->vehicle_size == 1 ? 'Bike' : 'Car');
+                        $response['fullTokenNumber'] = ($row->vehicle_model );
+
+                        $resp['tokenDetailList'][] = $response;
                     }
-                    $resp['billAmount'] = $usage['billAmount'];
-                    $resp['durationOccupied'] = $usage['durationOccupied'];
-                    $resp['checkInTime'] = $row->checkin_time;
-                    $resp['transactionId'] = $row->checkin_id;
                 }
                 $this->response($resp, 200);
             } catch (Exception $ex) {
@@ -173,11 +188,12 @@ class Vendor extends REST_Controller {
                 if (checkselectedparams($this->post(), $allowParam)) {
                     $vendor_id = $this->post('venderId');
                     $vehicle_no = $this->post('tokenNumber');
-                    $where = array('vendor_id' => $vendor_id, 'vehicle_no' => $vehicle_no);
+                    $transactionId = $this->post('transactionId');
+                    $where = array('checkin_id' => $transactionId);
                     $row = $this->usermodel->get_data('checkin_details', $where);
                     if($row) {
                          if($this->usermodel->checkout($this->post(), $row)) {
-                            $MESSAGE = "Checkout completed.";
+                            $MESSAGE = "Check-out Success";
                             $responseCode = 200;   
                          } else {
                             $MESSAGE = "Checkout failed try again!";
@@ -185,7 +201,7 @@ class Vendor extends REST_Controller {
                          }
                          
                     } else {
-                        $MESSAGE = 'Invalid Vehichle No.';
+                        $MESSAGE = 'No vehicle found';
                         $responseCode = 304;
                     }
                 } else {
@@ -209,22 +225,15 @@ class Vendor extends REST_Controller {
    function forgotpin_post() {
        try {
             $allowParam = array(
-           // 'transactionId',
             'otherInfo'
             );
 	    $post = json_decode(json_encode($this->post('otherInfo')));
-//	print_r($post); exit;
             if (1) {
-                //echo '{hi}'; exit;   
-//print_r($_FILES['photo']); exit;
                 if (isset($_FILES['photo']) && $_FILES['photo']['name'] != '') {
 
                     $config['upload_path']   = UPLOAD_PATH; 
                     $config['allowed_types'] = 'gif|jpg|png|jpeg'; 
-                    // $config['max_size']      = 4000; 
-                    // $config['max_width']     = 1024; 
-                    // $config['max_height']    = 768;  
-	              $this->load->library('upload', $config);
+	                $this->load->library('upload', $config);
            /*            print_r($this->upload->do_upload('photo')); 
                       print_r($this->upload->display_errors());
                        exit;*/
@@ -232,15 +241,7 @@ class Vendor extends REST_Controller {
                
                     if ($this->upload->do_upload('photo')) {
                         $uploaded_files = $this->upload->data();
-//print_r($uploaded_files); exit;
-                        $update_res = $this->usermodel->updateProfilePic($uploaded_files['file_name'], $post);
-                        if($update_res) {
-                              $MESSAGE = "Data captured.";
-                            $responseCode = 200;   
-                         } else {
-                            $MESSAGE = "Data not captured.";
-                            $responseCode = 304;
-                         }
+                        
                     } else {
                         $MESSAGE = strip_tags($this->upload->display_errors());
                         $responseCode = 304;
@@ -248,8 +249,14 @@ class Vendor extends REST_Controller {
                         
                         
                 } else {
-                        $MESSAGE = 'Error in photo';
+                    $update_res = $this->usermodel->updateProfilePic($uploaded_files['file_name'], $post);
+                    if($update_res) {
+                          $MESSAGE = "Data captured.";
+                        $responseCode = 200;   
+                     } else {
+                        $MESSAGE = "Data not captured.";
                         $responseCode = 304;
+                     }
                 }
 
             } else {
@@ -275,10 +282,10 @@ class Vendor extends REST_Controller {
             if (checkselectedparams($this->post(), $allowParam)) {
                 $update_res = $this->usermodel->send_sms($this->post());
                 if($update_res) {
-                    $first_one = substr($update_res->mobile, 0, 1);
-                    $last_three = substr($update_res->mobile, 7, 3);
-                    $mobile_new = $first_one."xxxxxx".$last_three;
-                    $MESSAGE = "Pin has been sent to your mobile number(".$mobile_new.").";
+                    // $first_one = substr($update_res->mobile, 0, 1);
+                    // $last_three = substr($update_res->mobile, 7, 3);
+                    // $mobile_new = $first_one."xxxxxx".$last_three;
+                    $MESSAGE = "Pin has been sent to your mobile number(".$update_res->mobile.").";
                     $responseCode = 200;   
                  } else {
                     $MESSAGE = "Pin could not be sent. Try again!";
