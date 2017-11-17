@@ -108,16 +108,15 @@ class Usermodel extends CI_Model {
         $rate_applied = $pricing_row->big_hourly_rate;
       }
       
-      $duration_occupied_in_hr = ceil(number_format((time() - strtotime($row->checkin_time)) / 60 * 60));
-      $duration_occupied = ceil(number_format((time() - strtotime($row->checkin_time)) / 60 ));
+      $duration_occupied_in_hr = ceil((time() - strtotime($row->checkin_time)) / 3600);
+      
       $price_in_minute = number_format($rate_applied / 60, 2);
       if ($duration_occupied_in_hr > $first_x_hour) {
         $bill_amount = $first_x_hour_rate + (($duration_occupied_in_hr - $first_x_hour) * $rate_applied);
       } else {
         $bill_amount = $first_x_hour_rate;
       }
-
-      $duration_occupied = number_format((time() - strtotime($row->checkin_time)) / 60);
+      $duration_occupied = ceil((time() - strtotime($row->checkin_time)) / 60 );
       if ($duration_occupied >= 60) {
         $duration_occupied = floor($duration_occupied/60)." Hr ".($duration_occupied%60). " Minutes";
       } else {
