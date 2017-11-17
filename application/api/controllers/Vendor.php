@@ -72,10 +72,10 @@ class Vendor extends REST_Controller {
                 if (checkselectedparams($this->post(), $allowParam)) {
                     if(strlen($this->post('pin')) != 4) {
                         $MESSAGE = 'Pin must be 4 digit.';
-                        $responseCode = 300;
+                        $responseCode = 304;
                     } else  if(strlen($this->post('tokenNumber')) != 4) {
                         $MESSAGE = 'Vehicle number must be last 4 digit.';
-                        $responseCode = 300;
+                        $responseCode = 304;
                     } else {
                         $this->load->library('userauth');
                         $vechicle_size = $this->post('goodsSize');
@@ -102,11 +102,11 @@ class Vendor extends REST_Controller {
                                 $responseCode = 200;
                              } else {
                                 $MESSAGE = MSG304;
-                                $responseCode = 300;
+                                $responseCode = 304;
                              }
                         } else {
                             $MESSAGE = 'Vehichle already in parking.';
-                            $responseCode = 300;
+                            $responseCode = 304;
                         }
                     }
                 } else {
@@ -145,7 +145,7 @@ class Vendor extends REST_Controller {
                              $responseCode = 200;
                         } else {
                             $MESSAGE = 'Invalid Vehichle No.';
-                            $responseCode = 300;
+                            $responseCode = 304;
                         }
                     
                 } else {
@@ -205,12 +205,12 @@ class Vendor extends REST_Controller {
                             $responseCode = 200;   
                          } else {
                             $MESSAGE = "Checkout failed try again!";
-                            $responseCode = 300;
+                            $responseCode = 304;
                          }
                          
                     } else {
                         $MESSAGE = 'No vehicle found';
-                        $responseCode = 300;
+                        $responseCode = 304;
                     }
                 } else {
                     $MESSAGE = MSG302;
@@ -253,7 +253,7 @@ class Vendor extends REST_Controller {
                         
                     } else {
                         $MESSAGE = strip_tags($this->upload->display_errors());
-                        $responseCode = 300;
+                        $responseCode = 304;
                     }
                 } else {
                     $update_res = $this->usermodel->updateProfilePic($uploaded_files['file_name'], $post);
@@ -267,11 +267,11 @@ class Vendor extends REST_Controller {
                             $responseCode = 200;   
                          } else {
                             $MESSAGE = "Pin could not be sent.Try again!";
-                            $responseCode = 300;
+                            $responseCode = 304;
                          }
                      } else {
                         $MESSAGE = "Data not captured.";
-                        $responseCode = 300;
+                        $responseCode = 304;
                      }
                 }
 
@@ -305,7 +305,7 @@ class Vendor extends REST_Controller {
                     $responseCode = 200;   
                  } else {
                     $MESSAGE = "Pin could not be sent. Try again!";
-                    $responseCode = 300;
+                    $responseCode = 304;
                  }
             } else {
                         $MESSAGE = MSG302;
@@ -335,7 +335,7 @@ class Vendor extends REST_Controller {
                     $responseCode = 200;   
                  } else {
                     $MESSAGE = "Failure";
-                    $responseCode = 300;
+                    $responseCode = 304;
                  }
             } else {
                         $MESSAGE = MSG302;
