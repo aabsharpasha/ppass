@@ -70,6 +70,7 @@ class Vendor extends REST_Controller {
                 );
           
                 if (checkselectedparams($this->post(), $allowParam)) {
+                    $vendor_id = $this->post('venderId');
                     if(strlen($this->post('pin')) != 4) {
                         $MESSAGE = 'Pin must be 4 digit.';
                         $responseCode = 304;
@@ -80,10 +81,10 @@ class Vendor extends REST_Controller {
                         $this->load->library('userauth');
                         $vechicle_size = $this->post('goodsSize');
                         if($this->post('fullTokenNumber')) {
-                            $where = array('vehicle_model' => $this->post('fullTokenNumber'), 'is_checkout' => '0', 'vehicle_size' => $vechicle_size);
+                            $where = array('vehicle_model' => $this->post('fullTokenNumber'), 'is_checkout' => '0', 'vehicle_size' => $vechicle_size, 'vendor_id' => $vendor_id);
                             $resExist = $this->userauth->is_exist_data('checkin_details', $where);
                         }  else {
-                            $where = array('vehicle_no' => $this->post('tokenNumber'), 'is_checkout' => '0', 'vehicle_size' => $vechicle_size);
+                            $where = array('vehicle_no' => $this->post('tokenNumber'), 'is_checkout' => '0', 'vehicle_size' => $vechicle_size, 'vendor_id' => $vendor_id);
                             $resExist = $this->userauth->is_exist_data('checkin_details', $where);
                         }
                          if(!$resExist) {

@@ -95,6 +95,7 @@ class Vendor extends CI_Controller {
                 $data = $this->input->post();
                // $data['vendor_id'] = $vendor_id;
                // $data['vendor_id'] = 'sda700';
+                $data['password'] = md5($data['password']);
                 $where = array('user_id' => $this->input->post('user_id'));
                 if($this->backend->update_data($data, 'users', $where)) {
                   //echo $this->db->last_query(); exit;
