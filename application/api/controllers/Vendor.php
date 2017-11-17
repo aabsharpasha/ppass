@@ -306,6 +306,37 @@ class Vendor extends REST_Controller {
             throw new Exception('Error in VendorLogin function - ' . $ex);
         }
     }
+
+    function termsAndConditions_post() {
+         try {
+            $allowParam = array(
+            'venderId',
+            );
+            if (checkselectedparams($this->post(), $allowParam)) {
+                $update_res = $this->usermodel->get_data('pages', array('vendor_id' => $this->post('venderId')));
+                if($update_res) {
+                    $MESSAGE = "Success";
+                    $responseCode = 200;   
+                 } else {
+                    $MESSAGE = "Failure";
+                    $responseCode = 304;
+                 }
+            } else {
+                        $MESSAGE = MSG302;
+                        $responseCode = 302;
+            }
+
+            $resp = array(
+                'responseMessage' => $MESSAGE,
+                'responseCode'    => $responseCode,
+                'termsAndConditions' => $update_res->page_content
+            );
+              
+            $this->response($resp, 200);
+        } catch (Exception $ex) {
+            throw new Exception('Error in termsAndConditions function - ' . $ex);
+        }
+    }
     
     
 }
