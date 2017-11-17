@@ -24,7 +24,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
                             <option value="">Select Vendor</option>
                               <?php foreach($vendors as $vendor) { ?>
                                 
-                                <option value="<?php echo $vendor->vendor_id ?>"><?php echo $vendor->vendor_name ?></option>
+                                <option value="<?php echo $vendor->vendor_id ?>" <?php echo ($vendor->vendor_id == $user->vendor_id ? 'selected' : '') ?>><?php echo $vendor->vendor_name ?></option>
                               <?php } ?>
                           </select>
                              <!-- <input type="text" class="form-control form-control-success" id="vendor_name" name="vendor_name" placeholder="Vendor Name" value="<?php echo set_value('vendor_name', $vendor->vendor_name) ?>" required> -->

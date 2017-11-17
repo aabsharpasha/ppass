@@ -44,6 +44,7 @@ class Vendor extends CI_Controller {
                 $this->load->model('backend');
                 $data = $this->input->post();
                 $data['password'] = md5($data['password']);
+                $data['user_type'] = 'vendor';
                 if($this->backend->insert_data($data, 'users')) {
                   $this->session->set_flashdata('vendor_add_msg', 'User Created Successfully');
                   redirect('vendor/users');
@@ -64,15 +65,27 @@ class Vendor extends CI_Controller {
                   $this->load->view('includes/footer.php');
             }
         }
+        function is_exist($user_name) {
+           $this->load->model('backend');
+           $where = array('user_id !=' => $this->input->post('user_id'), 'user_name' => $this->input->post('user_name'));
+                        $user = $this->backend->get_data_by_cond('users', $where);
+                         if($user->user_id) 
+                          return FALSE;
+                        else  {
+                          $this->form_validation->set_message('username_check', 'Username already exist.');
+                          return TRUE;
+                        }
+        }
 
-        function edit_user($user_id) {
+        function edit_user($user_id = '') {
             $this->load->model('backend');
             $this->load->library('form_validation');
             $this->load->library('form_validation');
-            $this->form_validation->set_rules('user_name', 'User Name', 'trim|required|is_unique[users.user_name]', array(
-                'is_unique'     => 'This %s already exists.'
-                )
-             );
+            
+                      //  print_r($user); exit;
+          
+            $this->form_validation->set_rules('user_name', 'User Name', 'callback_is_exist');
+            
 
             $this->form_validation->set_rules('vendor_id', 'Vendor', 'trim|required');
             $this->form_validation->set_rules('password', 'Password', 'trim|required');
@@ -86,9 +99,9 @@ class Vendor extends CI_Controller {
                 if($this->backend->update_data($data, 'users', $where)) {
                   //echo $this->db->last_query(); exit;
                   $this->session->set_flashdata('vendor_add_msg', 'User updated Successfully');
-                  redirect('vendor');
+                  redirect('vendor/users');
                 } else {
-                  redirect('vendor');
+                  redirect('vendor/users');
                   $this->session->set_flashdata('vendor_add_msg', 'Error while adding...Try Again');
                 }
 
