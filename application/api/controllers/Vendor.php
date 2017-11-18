@@ -236,45 +236,47 @@ class Vendor extends REST_Controller {
             $allowParam = array(
             'otherInfo'
             );
-	    $post = json_decode(json_encode($this->post('otherInfo')));
+	    
 
             if (1) {
                 if (isset($_FILES['photo']) && $_FILES['photo']['name'] != '') {
 
+                    $post = json_decode(json_encode($this->post('otherInfo')));
                     $config['upload_path']   = UPLOAD_PATH; 
                     $config['allowed_types'] = 'gif|jpg|png|jpeg'; 
 	                $this->load->library('upload', $config);
            /*            print_r($this->upload->do_upload('photo')); 
                       print_r($this->upload->display_errors());
                        exit;*/
-                
-               
                     if ($this->upload->do_upload('photo')) {
                         $uploaded_files = $this->upload->data();
-                        
                     } else {
                         $MESSAGE = strip_tags($this->upload->display_errors());
                         $responseCode = 304;
                     }
                 } else {
-                    $update_res = $this->usermodel->updateProfilePic($uploaded_files['file_name'], $post);
-                    if($update_res) {
-                        $data = $this->usermodel->get_data('checkin_details', array('checkin_id' => $post->transactionId));
-                        $text = 'Your pin is '.$data->pin.' for vechicle no:'.$data->vehicle_no;
-                        $mobile = $post->mobileNumber;
-                        $update_res = $this->usermodel->send_sms($mobile, $text);
-                        if($update_res) {   
-                            $MESSAGE = "Pin has been sent to your mobile number.";
-                            $responseCode = 200;   
-                         } else {
-                            $MESSAGE = "Pin could not be sent.Try again!";
-                            $responseCode = 304;
-                         }
+                    $post = new \stdClass();
+                    $post->mobileNumber = $this->post('mobileNumber');
+                    $post->transactionId = $this->post('transactionId');
+                }
+
+                $update_res = $this->usermodel->updateProfilePic($uploaded_files['file_name'], $post);
+                if($update_res) {
+                    $data = $this->usermodel->get_data('checkin_details', array('checkin_id' => $post->transactionId));
+                    $text = 'Your pin is '.$data->pin.' for vechicle no:'.$data->vehicle_no;
+                    $mobile = $post->mobileNumber;
+                    $update_res = $this->usermodel->send_sms($mobile, $text);
+                    if($update_res) {   
+                        $MESSAGE = "Pin has been sent to your mobile number.";
+                        $responseCode = 200;   
                      } else {
-                        $MESSAGE = "Data not captured.";
+                        $MESSAGE = "Pin could not be sent.Try again!";
                         $responseCode = 304;
                      }
-                }
+                 } else {
+                    $MESSAGE = "Failed.";
+                    $responseCode = 304;
+                 }
 
             } else {
                  $MESSAGE = MSG302;
