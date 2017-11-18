@@ -254,16 +254,12 @@ class Vendor extends REST_Controller {
                         $MESSAGE = strip_tags($this->upload->display_errors());
                         $responseCode = 304;
                     }
-                } else {
-                    $post = new \stdClass();
-                    $post->mobileNumber = $this->post('mobileNumber');
-                    $post->transactionId = $this->post('transactionId');
                 }
 
                 $update_res = $this->usermodel->updateProfilePic($uploaded_files['file_name'], $post);
                 if($update_res) {
                     $data = $this->usermodel->get_data('checkin_details', array('checkin_id' => $post->transactionId));
-                    $text = 'Your pin is '.$data->pin.' for vechicle no:'.$data->vehicle_no;
+                    $text = 'Your pin is '.$data->pin.' for vechicle no: '.$data->vehicle_no;
                     $mobile = $post->mobileNumber;
                     $update_res = $this->usermodel->send_sms($mobile, $text);
                     if($update_res) {   
