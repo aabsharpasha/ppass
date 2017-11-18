@@ -236,12 +236,12 @@ class Vendor extends REST_Controller {
             $allowParam = array(
             'otherInfo'
             );
-	    
+	    $post = json_decode($this->post('otherInfo'));
 
             if (1) {
                 if (isset($_FILES['photo']) && $_FILES['photo']['name'] != '') {
 
-                    $post = json_decode(json_encode($this->post('otherInfo')));
+                   // $post = json_decode(json_encode($this->post('otherInfo')));
                     $config['upload_path']   = UPLOAD_PATH; 
                     $config['allowed_types'] = 'gif|jpg|png|jpeg'; 
 	                $this->load->library('upload', $config);
@@ -255,12 +255,14 @@ class Vendor extends REST_Controller {
                         $responseCode = 304;
                     }
                 }
-
+//print_r($post); exit;
                 $update_res = $this->usermodel->updateProfilePic($uploaded_files['file_name'], $post);
+
                 if($update_res) {
                     $data = $this->usermodel->get_data('checkin_details', array('checkin_id' => $post->transactionId));
                     $text = 'Your pin is '.$data->pin.' for vechicle no: '.$data->vehicle_no;
                     $mobile = $post->mobileNumber;
+//print_r($post->mobileNumber); exit;
                     $update_res = $this->usermodel->send_sms($mobile, $text);
                     if($update_res) {   
                         $MESSAGE = "Pin has been sent to your mobile number.";
