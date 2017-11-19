@@ -21,13 +21,14 @@ class Usermodel extends CI_Model {
       return $res;
   }
 
-  function login($username, $password, $vendor_id) {
+  function login($username, $password, $vendor_id = '') {
       $this->db->select('*');
       $this->db->from('users');
       $this->db->where('user_name', $username);
-      //$this->db->or_where('email', $username);
+      $this->db->or_where('email', $username);
       $this->db->where('password', $password);
-      $this->db->where('vendor_id', $vendor_id);
+      if($vendor_id)
+        $this->db->where('vendor_id', $vendor_id);
       $query = $this->db->get();
       $num = $query->num_rows();
       //echo  $this->db->last_query(); exit;
@@ -84,6 +85,15 @@ class Usermodel extends CI_Model {
     $rows = $this->db->get_where($table, $where);
 
     return $rows->row();
+  }
+
+  function get_userdata($user_id) {
+    $this->db->select('user_name, email, mobile, user_id');
+    $this->db->where(array('user_id' => $user_id));
+    $query = $this->db->get('users');
+    
+    return $query->row();
+
   }
 
   function get_data_array($table, $where) {

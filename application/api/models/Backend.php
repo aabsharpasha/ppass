@@ -5,7 +5,9 @@ class Backend extends CI_Model {
           parent::__construct();
         }
   function insert_data($data,$table){
-     return $this->db->insert($table, $data);
+     $this->db->insert($table, $data);
+
+     return $this->db->insert_id();
   }
   
 
