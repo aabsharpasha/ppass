@@ -198,7 +198,7 @@ class Vendor extends REST_Controller {
                     $vendor_id = $this->post('venderId');
                     $vehicle_no = $this->post('tokenNumber');
                     $transactionId = $this->post('transactionId');
-                    $where = array('checkin_id' => $transactionId);
+                    $where = array('checkin_id' => $transactionId, 'is_checkout' => '0');
                     $row = $this->usermodel->get_data('checkin_details', $where);
                     if($row) {
                          if($this->usermodel->checkout($this->post(), $row)) {
@@ -210,7 +210,7 @@ class Vendor extends REST_Controller {
                          }
                          
                     } else {
-                        $MESSAGE = 'No vehicle found';
+                          $MESSAGE = "Already checked-out!";
                         $responseCode = 304;
                     }
                 } else {
@@ -240,8 +240,6 @@ class Vendor extends REST_Controller {
 
             if (1) {
                 if (isset($_FILES['photo']) && $_FILES['photo']['name'] != '') {
-
-                   // $post = json_decode(json_encode($this->post('otherInfo')));
                     $config['upload_path']   = UPLOAD_PATH; 
                     $config['allowed_types'] = 'gif|jpg|png|jpeg'; 
 	                $this->load->library('upload', $config);
@@ -255,14 +253,12 @@ class Vendor extends REST_Controller {
                         $responseCode = 304;
                     }
                 }
-//print_r($post); exit;
                 $update_res = $this->usermodel->updateProfilePic($uploaded_files['file_name'], $post);
 
                 if($update_res) {
                     $data = $this->usermodel->get_data('checkin_details', array('checkin_id' => $post->transactionId));
                     $text = 'Your pin is '.$data->pin.' for vechicle no: '.$data->vehicle_no;
                     $mobile = $post->mobileNumber;
-//print_r($post->mobileNumber); exit;
                     $update_res = $this->usermodel->send_sms($mobile, $text);
                     if($update_res) {   
                         $MESSAGE = "Pin has been sent to your mobile number.";

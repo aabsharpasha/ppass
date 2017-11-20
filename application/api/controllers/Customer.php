@@ -71,7 +71,7 @@ class Customer extends REST_Controller {
                         $where = array('email' => $this->post('email'));
                         $resExist = $this->userauth->is_exist_data('users', $where);
                     
-                         if(!$resExist || 1) {
+                         if(!$resExist) {
                             $data = $this->post();
                             $data['password'] = md5($this->post('password'));
                             $res = $this->backend->insert_data($data, 'users');
@@ -246,14 +246,14 @@ class Customer extends REST_Controller {
                     $vendor_id = $this->post('venderId');
                     $vehicle_no = $this->post('tokenNumber');
                     $transactionId = $this->post('transactionId');
-                    $where = array('checkin_id' => $transactionId);
+                    $where = array('checkin_id' => $transactionId, 'is_checkout' => 0);
                     $row = $this->usermodel->get_data('checkin_details', $where);
                     if($row) {
                          if($this->usermodel->checkout($this->post(), $row)) {
                             $MESSAGE = "Check-out Success";
                             $responseCode = 200;   
                          } else {
-                            $MESSAGE = "Checkout failed try again!";
+                            $MESSAGE = "Already Checked-out!";
                             $responseCode = 304;
                          }
                          

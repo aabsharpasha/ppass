@@ -7,7 +7,8 @@ class Backend extends CI_Model {
   function insert_data($data,$table){
      $this->db->insert($table, $data);
 
-     return $this->db->insert_id();
+     $insert_id = $this->db->insert_id();
+     return $insert_id ? $insert_id : $this->db->affected_rows();
   }
   
 
