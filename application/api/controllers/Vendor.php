@@ -210,8 +210,15 @@ class Vendor extends REST_Controller {
                          }
                          
                     } else {
-                          $MESSAGE = "Already checked-out!";
-                        $responseCode = 304;
+                        $where = array('checkin_id' => $transactionId, 'is_checkout' => '1');
+                        $row = $this->usermodel->get_data('checkin_details', $where);
+                        if($row) {
+                            $MESSAGE = "Already checked-out!";
+                            $responseCode = 304;
+                        } else {
+                           $MESSAGE = "Invalid Vechilce No!";
+                            $responseCode = 304; 
+                        }
                     }
                 } else {
                     $MESSAGE = MSG302;
