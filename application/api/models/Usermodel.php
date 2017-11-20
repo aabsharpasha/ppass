@@ -223,4 +223,26 @@ class Usermodel extends CI_Model {
         return $this->db->get_where('pricing_details', array('vendor_id' => $vendorId))->row();
     }
 
+    function getVehiclesListByUser($user_id)
+    {
+        return $this->db->get_where('user_vehicles', array('user_id' => $user_id))->result();
+    }
+
+    function add_vehicle($post) 
+    {
+        $data = array(
+                  'user_id'       => $post['user_id'],
+                  'vehicle_number'    => $post['vehicle_number'],
+                  'vehicle_type'           => $post['vehicle_type'],
+                ); 
+
+        $res = $this->db->insert('user_vehicles', $data);
+       
+       if($res) {
+        return $res;
+       } else {
+        return 0;
+       }
+   }
+
 }

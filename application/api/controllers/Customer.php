@@ -44,14 +44,10 @@ class Customer extends REST_Controller {
             
             $resp = array( 
                         'responseMessage' => $MESSAGE,
-                        'responseCode'    => $responseCode
+                        'responseCode'    => $responseCode,
+                        'userData' => $res
                      );
-             if($res) {
-                $resp['userId'] = $res->user_id;
-                $resp['mobile'] = $res->mobile;
-                $resp['email'] = $res->email;
-                $resp['name'] = $res->user_name;
-             } 
+            
            
             $this->response($resp, 200);
         } catch (Exception $ex) {
@@ -447,6 +443,86 @@ class Customer extends REST_Controller {
         }
     }
 
+    function registerVehicle_post() {
+            try {
+                $allowParam = array(
+                'vehicle_number',
+                'vehicle_type',
+                'user_id'
+                );
+          
+                if (checkselectedparams($this->post(), $allowParam)) {
+                    if(strlen($this->post('vehicle_number')) != 4) {
+                        $MESSAGE = 'Vehicle number must be last 4 digit.';
+                        $responseCode = 304;
+                    } else {
+                            $where = array('vehicle_number' => $this->post('vehicle_number'), 'user_id' => $this->post('user_id'));
+                            $resExist = $this->userauth->is_exist_data('user_vehicles', $where);
+                        
+                         if(!$resExist) {
+                            $res = $this->usermodel->add_vehicle($this->post());
+                            if ($res) {
+                                $vehicleList = $this->usermodel->getVehiclesListByUser($this->post('user_id'));
+                                $MESSAGE = "Vechicle Added";
+                                $responseCode = 200;
+                             } else {
+                                $MESSAGE = MSG304;
+                                $responseCode = 304;
+                             }
+                        } else {
+                            $MESSAGE = 'Vehichle already added.';
+                            $responseCode = 304;
+                        }
+                    }
+                } else {
+                    $MESSAGE = MSG302;
+                    $responseCode = 302;
+                }
+               
+                $resp = array( 
+                            'responseMessage' => $MESSAGE,
+                            'responseCode'    => $responseCode,
+                            'vehilceList' => $vehicleList
+                        );
+               
+                $this->response($resp, 200);
+            } catch (Exception $ex) {
+                throw new Exception('Error in VendorLogin function - ' . $ex);
+            }
+    }
 
+    function getVehiclesList_post() {
+            try {
+                $allowParam = array(
+                    'user_id'
+                );
+          
+                if (checkselectedparams($this->post(), $allowParam)) {
+                            $vehicleList = array();
+                            $vehicleList = $this->usermodel->getVehiclesListByUser($this->post('user_id'));
+                            if ($vehicleList) {
+                               
+                                $MESSAGE = "Vechicle List Populated";
+                                $responseCode = 200;
+                             } else {
+                                $MESSAGE = MSG304;
+                                $responseCode = 304;
+                             }
+                } else {
+                    $MESSAGE = MSG302;
+                    $responseCode = 302;
+                }
+               
+                $resp = array( 
+                            'responseMessage' => $MESSAGE,
+                            'responseCode'    => $responseCode,
+                            'vehilceList' => $vehicleList
+                        );
+               
+                $this->response($resp, 200);
+            } catch (Exception $ex) {
+                throw new Exception('Error in VendorLogin function - ' . $ex);
+            }
+    }
     
 }
