@@ -407,5 +407,46 @@ class Customer extends REST_Controller {
         }
     }
     
+    function getNearByVendors_post() {
+         try {
+            $allowParam = array(
+            'userLat',
+            'userLong',
+            );
+            if (checkselectedparams($this->post(), $allowParam)) {
+                $userLat = $this->post('userLat');
+                $userLong = $this->post('userLong');
+
+                $vendors = $this->usermodel->getNearByVendors($userLat, $userLong);
+                if($vendors) {
+                    $MESSAGE = "Success";
+                    $responseCode = 200;   
+                 } else {
+                    $MESSAGE = "Failure";
+                    $responseCode = 304;
+                 }
+            } else {
+                        $MESSAGE = MSG302;
+                        $responseCode = 302;
+            }
+
+            foreach($vendors as $line) {
+                $line->pricing_details = $this->usermodel->getPricingDetails($line->vendor_id);
+                $vendorsList[] = $line;
+            }
+
+            $resp = array(
+                'responseMessage' => $MESSAGE,
+                'responseCode'    => $responseCode,
+                'vendorsList' => $vendorsList
+            );
+              
+            $this->response($resp, 200);
+        } catch (Exception $ex) {
+            throw new Exception('Error in getNearByVendors_post function - ' . $ex);
+        }
+    }
+
+
     
 }

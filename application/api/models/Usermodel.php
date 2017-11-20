@@ -187,7 +187,8 @@ class Usermodel extends CI_Model {
       }
   }
 
-  function send_sms($mobile, $text) {
+  function send_sms($mobile, $text) 
+  {
       if($mobile) {
         $text = urlencode($text);
         $url = "https://mobilnxt.in/api/push?accesskey=VPWEHZOk1bBokhQofLZNbQMMxSRNGF&to=".$mobile."&text=".$text."&from=VACTST";
@@ -201,5 +202,25 @@ class Usermodel extends CI_Model {
         return false;
       }
   }
+
+    function getNearByVendors($userLat, $userLong)
+    {
+        $distanceType = 'km';
+        $multiplyer = 6371 * 1000;
+        $maxDistance = 160.934 * 1000; //offers in 100 miles
+        $proximity_cond = '(ROUND( ' . $multiplyer . ' * acos( cos( radians( ' . $userLat . ' ) )'
+                  . ' * cos( radians( vendor_lat ) )'
+                  . ' * cos( radians( vendor_long ) - radians( ' . $userLong . ' ) )'
+                  . ' + sin( radians( ' . $userLat . ' ) ) * sin( radians( vendor_lat ) ) ) )) < ' . $maxDistance;
+        $sql = "select * from vendors where $proximity_cond";
+        $query = $this->db->query($sql);
+        
+        return $query->result();
+    }
+
+    function getPricingDetails($vendorId)
+    {
+        return $this->db->get_where('pricing_details', array('vendor_id' => $vendorId))->row();
+    }
 
 }
