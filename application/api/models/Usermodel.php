@@ -244,5 +244,53 @@ class Usermodel extends CI_Model {
         return 0;
        }
    }
+    
+    function isUsed($pin) {
+      $where = array('pin' => $pin, 'is_checkout' => 0, 'vendor_id' => $vendor_id);
+      $resExist = $this->db->get_where('checkin_details', $where)->row();
+      
+      if($resExist) {
+        return true;
+      } else {
+        return false;
+      }
+    } 
+      
+    function customer_booking_save($post) 
+    {
+      $vendor_id = $post['vendor_id'];
+      
+      
+      $pin = mt_rand(100000, 999999);
+      while($this->isUsed($pin)) {
+        $pin = mt_rand(100000, 999999);
+      }
+      
+      $hours_booked = ceil((strtotime($post['end_time']) - strtotime($post['start_time'])) / (60*60));
+      $data = array(
+                'vendor_id'     => $post['vendor_id'],
+                'user_id'       => $post['user_id'],
+                'vehicle_no'    => $post['vehicle_no'],
+                'pin'           => $pin,
+                'vehicle_size'  => $post['vehicle_size'],
+                'start_time'    => $post['start_time'],
+                'payment_mode'  => $post['payment_mode'],
+                'hours_booked'  => $hours_booked,
+              ); 
+
+      //print_r($data); exit;
+
+      $res = $this->db->insert('customer_booking', $data);
+      // /* decrease inventory after check in */
+      // $column_name = ($post['vehicle_size'] == 1 ? 'small_occupied' : 'big_occupied');
+      // $query = "UPDATE pricing_details set $column_name = ($column_name + 1) where vendor_id = '$vendor_id'";
+      // $this->db->query($query);
+
+     if($res) {
+      return $pin;
+     } else {
+      return 0;
+     }
+   }
 
 }
