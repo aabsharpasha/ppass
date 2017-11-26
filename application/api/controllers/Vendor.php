@@ -59,7 +59,8 @@ class Vendor extends REST_Controller {
     }
 
 
-    function checkin_vendor_post() {
+    function checkin_vendor_post() 
+    {
             try {
                 $allowParam = array(
                 'userId',
@@ -350,6 +351,37 @@ class Vendor extends REST_Controller {
                 'responseMessage' => $MESSAGE,
                 'responseCode'    => $responseCode,
                 'termsAndConditions' => $update_res->page_content
+            );
+              
+            $this->response($resp, 200);
+        } catch (Exception $ex) {
+            throw new Exception('Error in termsAndConditions function - ' . $ex);
+        }
+    }
+
+    function getPage_post() {
+         try {
+            $allowParam = array(
+            'page_id',
+            );
+            if (checkselectedparams($this->post(), $allowParam)) {
+                $update_res = $this->usermodel->get_data('pages', array('page_id' => $this->post('page_id')));
+                if($update_res) {
+                    $MESSAGE = "Success";
+                    $responseCode = 200;   
+                 } else {
+                    $MESSAGE = "Failure";
+                    $responseCode = 304;
+                 }
+            } else {
+                        $MESSAGE = MSG302;
+                        $responseCode = 302;
+            }
+
+            $resp = array(
+                'responseMessage' => $MESSAGE,
+                'responseCode'    => $responseCode,
+                'pageContent' => $update_res->page_content
             );
               
             $this->response($resp, 200);
