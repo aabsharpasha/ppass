@@ -72,10 +72,11 @@ class Vendor extends REST_Controller {
           
                 if (checkselectedparams($this->post(), $allowParam)) {
                     $vendor_id = $this->post('venderId');
-                    if(strlen($this->post('pin')) != 4 || strlen($this->post('pin')) != 6) {
-                        $MESSAGE = 'Pin must be 4/6 digit.';
-                        $responseCode = 304;
-                    } else  if(strlen($this->post('tokenNumber')) != 4) {
+                    // if(strlen($this->post('pin')) != 4 || strlen($this->post('pin')) != 6) {
+                    //     $MESSAGE = 'Pin must be 4/6 digit.';
+                    //     $responseCode = 304;
+                    // } else  
+                    if(strlen($this->post('tokenNumber')) != 4) {
                         $MESSAGE = 'Vehicle number must be last 4 digit.';
                         $responseCode = 304;
                     } else {
