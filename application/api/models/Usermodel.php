@@ -58,10 +58,12 @@ class Usermodel extends CI_Model {
 
       $res = $this->db->insert('checkin_details', $data);
       $vendor_id = $post['venderId'];
-      /* decrease inventory after check in */
-      $column_name = ($post['goodsSize'] == 1 ? 'small_occupied' : 'big_occupied');
-      $query = "UPDATE pricing_details set $column_name = ($column_name + 1) where vendor_id = '$vendor_id'";
-      $this->db->query($query);
+      if(strlen($post['pin'] == 4)) {
+        /* decrease inventory after check in */
+        $column_name = ($post['goodsSize'] == 1 ? 'small_occupied' : 'big_occupied');
+        $query = "UPDATE pricing_details set $column_name = ($column_name + 1) where vendor_id = '$vendor_id'";
+        $this->db->query($query);
+      }
 
     if($res) {
       return $res;
@@ -259,8 +261,6 @@ class Usermodel extends CI_Model {
     function customer_booking_save($post) 
     {
       $vendor_id = $post['vendor_id'];
-      
-      
       $pin = mt_rand(100000, 999999);
       while($this->isUsed($pin)) {
         $pin = mt_rand(100000, 999999);
@@ -278,13 +278,11 @@ class Usermodel extends CI_Model {
                 'hours_booked'  => $hours_booked,
               ); 
 
-      //print_r($data); exit;
-
       $res = $this->db->insert('customer_booking', $data);
-      // /* decrease inventory after check in */
-      // $column_name = ($post['vehicle_size'] == 1 ? 'small_occupied' : 'big_occupied');
-      // $query = "UPDATE pricing_details set $column_name = ($column_name + 1) where vendor_id = '$vendor_id'";
-      // $this->db->query($query);
+      /* decrease inventory after booking */
+      $column_name = ($post['vehicle_size'] == 1 ? 'small_occupied' : 'big_occupied');
+      $query = "UPDATE pricing_details set $column_name = ($column_name + 1) where vendor_id = '$vendor_id'";
+      $this->db->query($query);
 
      if($res) {
       return $pin;
