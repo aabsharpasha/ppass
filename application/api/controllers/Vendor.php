@@ -391,6 +391,106 @@ class Vendor extends REST_Controller {
             throw new Exception('Error in termsAndConditions function - ' . $ex);
         }
     }
+
+     function getplandetails_post() 
+     {
+
+        try {
+                $allowParam = array(
+                'venderId'
+                );
+                
+                if (checkselectedparams($this->post(), $allowParam)) {
+                    
+                        $vendor_id = $this->post('venderId');
+                        $plans = $this->usermodel->get_plan_details($vendor_id);
+
+                        if($plans) {
+                             $MESSAGE = "Success";
+                             $responseCode = 200;
+
+                        } else {
+                            $MESSAGE = 'No Plans Available';
+                            $responseCode = 304;
+                        }
+                    
+                } else {
+                    $MESSAGE = MSG302;
+                    $responseCode = 302;
+                }
+               
+                $resp = array( 
+                            'responseMessage' => $MESSAGE,
+                            'responseCode'    => $responseCode,
+                            'categories' => $plans
+                        );
+
+                
+                $this->response($resp, 200);
+            } catch (Exception $ex) {
+                throw new Exception('Error in VendorLogin function - ' . $ex);
+            }
+   }
+
+   function activate_plan_post() 
+    {
+            try {
+                $allowParam = array(
+                'userId',
+                'venderId',
+                'tokenNumber',
+                'mobileNumber',
+                'planId',
+                'paymentMode'
+                );
+          
+                if (checkselectedparams($this->post(), $allowParam)) {
+                    $vendor_id = $this->post('venderId');
+                    
+                        $this->load->model('backend');
+                        
+                        $where = array('email' => $this->post('email'));
+                        $plan_active = 0;//$this->userauth->is_plan_active('users', $where);
+                    
+                         if(!$plan_active) {
+                            $post = $this->post();
+                            $data['user_id'] = $this->post('userId');
+                            $data['vehicle_no'] = $this->post('tokenNumber');
+                            $data['mobile'] = $this->post('mobileNumber');
+                            $data['plan_id'] = $this->post('planId');
+                            $data['payment_mode'] = $this->post('paymentMode');
+
+                            $res = $this->backend->insert_data($data, 'user_plans');
+                            $plan_detail = $this->usermodel->get_data('vendor_plans', array('plan_id' => $this->post('planId')));
+
+                            if ($res) {
+                                $vehicle_no = $this->post('tokenNumber');
+                                $MESSAGE = "$plan_detail->plan_title activated successfully for vehicle number $vehicle_no";
+                                $responseCode = 200;
+                             } else {
+                                $MESSAGE = MSG304;
+                                $responseCode = 304;
+                             }
+                        } else {
+                            $MESSAGE = 'Plan already activated.';
+                            $responseCode = 304;
+                        }
+                    
+                } else {
+                    $MESSAGE = MSG302;
+                    $responseCode = 302;
+                }
+              // $this->usermodel->get_data('users', array(''))
+                $resp = array( 
+                            'responseMessage' => $MESSAGE,
+                            'responseCode'    => $responseCode,
+                        );
+               
+                $this->response($resp, 200);
+            } catch (Exception $ex) {
+                throw new Exception('Error in VendorLogin function - ' . $ex);
+            }
+    }
     
     
 }

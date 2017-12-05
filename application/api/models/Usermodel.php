@@ -291,4 +291,25 @@ class Usermodel extends CI_Model {
      }
    }
 
+   function get_plan_details($vendor_id) 
+   {
+        $where = array('vendor_id' => $vendor_id, 'plan_for' => 'car');
+        $car_plans_res = $this->usermodel->get_data_array('vendor_plans', $where);
+        $where = array('vendor_id' => $vendor_id, 'plan_for' => 'bike');
+        $bike_plans_res = $this->usermodel->get_data_array('vendor_plans', $where);
+
+        foreach($car_plans_res as $line) {
+          $car_plans[] = array('id' => $line->plan_id, 'name' => $line->plan_title, 'cost' => $line->plan_cost);
+        }
+
+         foreach($bike_plans_res as $line) {
+          $bike_plans[] = array('id' => $line->plan_id, 'name' => $line->plan_title, 'cost' => $line->plan_cost);
+        }
+
+        $plans[] = array('id' => 1, 'name' => 'Car', 'plans' => $car_plans);
+        $plans[] = array('id' => 1, 'name' => 'bike', 'plans' => $bike_plans);
+
+        return $plans;
+   }
+
 }
