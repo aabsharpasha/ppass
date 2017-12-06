@@ -18,7 +18,8 @@ class Vendor extends REST_Controller {
         $this->load->model('usermodel');
     }
 
-    function login_post() {
+    function login_post() 
+    {
             try {
 
                 $allowParam = array(
@@ -170,7 +171,7 @@ class Vendor extends REST_Controller {
                         if($row->mobile) {
                             $response['mobileNumber'] = $row->mobile;
                         }
-                        $response['billAmount'] = $usage['billAmount'];
+                        $response['billAmount'] = filter_var($usage['billAmount'], FILTER_SANITIZE_NUMBER_INT);
                         $response['durationOccupied'] = $usage['durationOccupied'];
                         $response['checkInTime'] = $row->checkin_time;
                         $response['transactionId'] = $row->checkin_id;
