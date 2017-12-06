@@ -162,7 +162,7 @@ class Vendor extends REST_Controller {
                             'responseCode'    => $responseCode
                         );
 
-                if($rows) {
+                if ($rows) {
                     foreach($rows as $row) {
                         $usage = $this->usermodel->calculate_bill_amount($row);
                         $response = array();
@@ -171,13 +171,13 @@ class Vendor extends REST_Controller {
                         if($row->mobile) {
                             $response['mobileNumber'] = $row->mobile;
                         }
-                        $response['billAmount'] = filter_var($usage['billAmount'], FILTER_SANITIZE_NUMBER_INT);
+                        $response['bill'] = array('billAmount' =>filter_var($usage['billAmount'], FILTER_SANITIZE_NUMBER_INT), 'description' => '');
                         $response['durationOccupied'] = $usage['durationOccupied'];
                         $response['checkInTime'] = $row->checkin_time;
                         $response['transactionId'] = $row->checkin_id;
                         $response['vehicleType'] = ($row->vehicle_size == 1 ? 'Bike' : 'Car');
                         $response['fullTokenNumber'] = ($row->vehicle_model );
-
+                        $response['billAmount'] = filter_var($usage['billAmount'], FILTER_SANITIZE_NUMBER_INT);
                         $resp['tokenDetailList'][] = $response;
                     }
                 }
@@ -190,21 +190,23 @@ class Vendor extends REST_Controller {
    function checkout_post() {
          try {
                 $allowParam = array(
-                'userId',
-                'venderId',
-                'tokenNumber',
-                'transactionId',
-                'paymentMode',
+                'otherInfo'
+                // 'userId',
+                // 'venderId',
+                // 'tokenNumber',
+                // 'transactionId',
+                // 'paymentMode',
                 );
                 
                 if (checkselectedparams($this->post(), $allowParam)) {
-                    $vendor_id = $this->post('venderId');
-                    $vehicle_no = $this->post('tokenNumber');
-                    $transactionId = $this->post('transactionId');
+                    $post = $this->post('otherInfo');
+                    $vendor_id = $post['venderId'];
+                    $vehicle_no = $post['tokenNumber'];
+                    $transactionId = $post['transactionId'];
                     $where = array('checkin_id' => $transactionId, 'is_checkout' => '0');
                     $row = $this->usermodel->get_data('checkin_details', $where);
                     if($row) {
-                         if($this->usermodel->checkout($this->post(), $row)) {
+                         if($this->usermodel->checkout($post, $row)) {
                             $MESSAGE = "Check-out Success";
                             $responseCode = 200;   
                          } else {
