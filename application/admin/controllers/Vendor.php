@@ -4,7 +4,57 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 class Vendor extends CI_Controller {
         function __construct() {
           parent::__construct();
-          $this->userauth->authentication('normal');
+         // echo $this->uri->segment(2); exit;
+          $exclude_pages = array('download_reciept','get_reciept_list');
+          if(!in_array($this->uri->segment(2), $exclude_pages)) {
+            $this->userauth->authentication('normal');
+          }
+          
+        }
+
+        function get_reciept_list() {
+          parse_str($this->input->post('data'));
+
+          
+          $where = array('vendor_id' => $vendor_id, 'vehicle_no' => $vehicle_number, 'pin' => $vehicle_pin);
+         $this->db->select('checkin_details.checkin_id, checkin_details.vehicle_no, checkout_details.duration_occupied, checkin_details.checkin_time, checkout_details.checkout_time, checkout_details.paid_amount, checkout_details.checkout_time')
+         ->from('checkin_details')
+         ->join('checkout_details', 'checkin_details.checkin_id = checkout_details.checkin_id', 'left')->where($where);
+          $result = $this->db->get();
+          //echo $this->db->last_query(); 
+          $res = $result->result();
+      // print_r($res); exit;
+          if($res) {
+            $location = $this->get_vendor_location($vendor_id);
+            foreach($res as $line) {
+              $ret_str .= '<li class="list-download">';
+              $ret_str .= "<div><span>Vehicle No: </span> ".$line->vehicle_no."</div>";
+              $ret_str .= "<div><span>Location: </span> ".$location."</div>";
+              $ret_str .= "<div><span>Duration: </span> ".$line->duration_occupied."</div>";
+              $ret_str .= "<div><span>Check In time: </span> ".date("Y-m-d h:i A",strtotime($line->checkin_time))."</div>";
+              $ret_str .= "<div><span>Check Out time: </span> ".date("Y-m-d h:i A",strtotime($line->checkout_time))."</div>";
+              $ret_str .= "<div><span>Amount Paid: </span> ".$line->paid_amount."</div>";
+              $ret_str .= "<div><a href='#'>Download</a></div>";
+              //$ret_str .= "<div><a href=".base_url('vendor/download_pdf/'.$line->checkin_id).">Download</a></div>";
+              $ret_str .= '</li>';
+             
+            }
+            // $ret_str .= '</ul>';
+          } else {
+            $ret_str = 'No Match Found.';
+          }
+
+          echo '<ul>'.$ret_str.'</ul>'; exit;
+          
+        }
+
+        function get_vendor_location($vendor_id) {
+          $res = $this->db->get_where('vendors', array('vendor_id' => $vendor_id));
+        //  echo $this->db->last_query(); exit;
+        //  print_r($res); exit;
+        //  print_r($res->row()); exit;
+          return $res->row()->vendor_address;
+        // print_r($res->row()); exit;
         }
 
         public function index($arg=NULL) {
@@ -28,6 +78,43 @@ class Vendor extends CI_Controller {
                   $this->load->view('includes/footer.php');
         }
         
+function download_reciept() {
+          //print_r( $this->input->post()); exit;
+            $this->load->library('form_validation');
+            $this->form_validation->set_rules('user_name', 'User Name', 'trim|required|is_unique[users.user_name]', array(
+                'is_unique'     => 'This %s already exists.'
+                )
+             );
+
+            $this->form_validation->set_rules('vendor_id', 'Vendor', 'trim|required');
+            $this->form_validation->set_rules('password', 'Password', 'trim|required');
+            if ($this->form_validation->run() === TRUE)
+            {
+                $this->load->model('backend');
+                $data = $this->input->post();
+                $data['password'] = md5($data['password']);
+                $data['user_type'] = 'vendor';
+                if($this->backend->insert_data($data, 'users')) {
+                  $this->session->set_flashdata('vendor_add_msg', 'User Created Successfully');
+                  redirect('vendor/users');
+                } else {
+                  redirect('vendor/users');
+                  $this->session->set_flashdata('vendor_add_msg', 'Error while adding...Try Again');
+                }
+
+            }
+            else
+            {
+                  $this->load->view('includes/header_admin', array('hide' => 1));
+                  //$this->load->view('includes/sidebar_admin');  
+                  $this->load->model('Backend');
+                  $view_data['vendors'] = $this->Backend->get_data('vendors');
+                  //print_r($view_data); exit;
+                  $this->load->view('vendor/download_recipet', $view_data);
+                  $this->load->view('includes/footer.php');
+            }
+        }
+
         function add_user() {
 
           //print_r( $this->input->post()); exit;

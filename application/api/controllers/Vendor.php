@@ -163,21 +163,28 @@ class Vendor extends REST_Controller {
                         );
 
                 if ($rows) {
+
                     foreach($rows as $row) {
-                        $usage = $this->usermodel->calculate_bill_amount($row);
+                        if(!$this->usermodel->is_active_pass($row->pin, $row->vehicle_no, $row->vehicle_model, date('Y-m-d',strtotime($row->checkin_time)))) {
+                            $usage = $this->usermodel->calculate_bill_amount($row);
+                            $billAmountDetail = array('billAmount' =>filter_var($usage['billAmount'], FILTER_SANITIZE_NUMBER_INT), 'description' => '');
+                        } else {
+                            $billAmountDetail = array('billAmount' =>0, 'description' => 'Amount is showing 0 INR because of Active Pass User');
+                        }
+
                         $response = array();
                         $response['tokenNumber'] = $row->vehicle_no;
                         $response['pin'] = $row->pin;
                         if($row->mobile) {
                             $response['mobileNumber'] = $row->mobile;
                         }
-                        $response['bill'] = array('billAmount' =>filter_var($usage['billAmount'], FILTER_SANITIZE_NUMBER_INT), 'description' => '');
+                        $response['bill'] = $billAmountDetail;
                         $response['durationOccupied'] = $usage['durationOccupied'];
                         $response['checkInTime'] = $row->checkin_time;
                         $response['transactionId'] = $row->checkin_id;
                         $response['vehicleType'] = ($row->vehicle_size == 1 ? 'Bike' : 'Car');
-                        $response['fullTokenNumber'] = ($row->vehicle_model );
-                        $response['billAmount'] = filter_var($usage['billAmount'], FILTER_SANITIZE_NUMBER_INT);
+                        $response['fullTokenNumber'] = ($row->vehicle_model);
+                       // $response['billAmount'] = filter_var($usage['billAmount'], FILTER_SANITIZE_NUMBER_INT);
                         $resp['tokenDetailList'][] = $response;
                     }
                 }
@@ -470,6 +477,8 @@ class Vendor extends REST_Controller {
                             $plan_detail = $this->usermodel->get_data('vendor_plans', array('plan_id' => $this->post('planId')));
 
                             if ($res) {
+                                // $digits = 5;
+                                // echo str_pad(rand(0, pow(10, $digits)-1), $digits, '0', STR_PAD_LEFT);
                                 $vehicle_no = $this->post('tokenNumber');
                                 $MESSAGE = "$plan_detail->plan_title activated successfully for vehicle number $vehicle_no";
                                 $responseCode = 200;

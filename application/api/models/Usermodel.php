@@ -25,9 +25,9 @@ class Usermodel extends CI_Model {
       $this->db->select('*');
       $this->db->from('users');
       $this->db->where('user_name', $username);
-      $this->db->or_where('email', $username);
+      //$this->db->or_where('email', $username);
       $this->db->where('password', $password);
-      if($vendor_id)
+     // if($vendor_id)
         $this->db->where('vendor_id', $vendor_id);
       $query = $this->db->get();
       $num = $query->num_rows();
@@ -311,6 +311,40 @@ return true;
         $plans[] = array('id' => 1, 'name' => 'bike', 'plans' => $bike_plans);
 
         return $plans;
+   }
+
+   function is_active_pass($pin, $vehicle_no, $vehicle_model, $check_in_date) 
+   {
+      
+      if ((strlen(trim($pin)) == 6) && (substr($pin, 0, 1) == 5)) {
+        $pass_details = $this->get_pass_details($vehicle_no, $vehicle_model);
+        if($pass_details) {
+         // print_r($pass_details); exit;
+          $last_active_date = date("Y-m-d", strtotime($pass_details->plan_start_date." +".$pass_details->plan_duration." days"));
+          //echo $check_in_date; exit;
+          if(strtotime($check_in_date) <= strtotime($last_active_date)) {
+            return true;
+          } else {
+            return false;
+          }
+        } else {
+          return false;
+        }
+        
+      } else {
+        return false;
+      }
+   }
+
+   function get_pass_details($vehicle_no, $vehicle_model) 
+   {
+       $where = array('vehicle_no' => $vehicle_model);
+       $this->db->select('user_plans.plan_id, user_plans.vehicle_no, user_plans.plan_start_date, vendor_plans.plan_duration')
+         ->from('user_plans')
+         ->join('vendor_plans', 'user_plans.plan_id = vendor_plans.plan_id')->where($where);
+          $result = $this->db->get();
+         // echo $this->db->last_query();  exit;
+        return  $res = $result->row();
    }
 
 }
