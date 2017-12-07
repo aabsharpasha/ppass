@@ -191,6 +191,7 @@ class Usermodel extends CI_Model {
 
   function send_sms($mobile, $text) 
   {
+return true;
       if($mobile) {
         $text = urlencode($text);
         $url = "https://mobilnxt.in/api/push?accesskey=VPWEHZOk1bBokhQofLZNbQMMxSRNGF&to=".$mobile."&text=".$text."&from=VACTST";

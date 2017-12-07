@@ -197,9 +197,12 @@ class Vendor extends REST_Controller {
                 // 'transactionId',
                 // 'paymentMode',
                 );
-                
+                 $post = json_decode($this->post('otherInfo'),1);
+//echo 'hello';
+//print_r($this->post()); exit;
+
                 if (checkselectedparams($this->post(), $allowParam)) {
-                    $post = $this->post('otherInfo');
+//                    $post = $this->post('otherInfo');
                     $vendor_id = $post['venderId'];
                     $vehicle_no = $post['tokenNumber'];
                     $transactionId = $post['transactionId'];
