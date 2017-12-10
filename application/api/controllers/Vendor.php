@@ -73,11 +73,11 @@ class Vendor extends REST_Controller {
           
                 if (checkselectedparams($this->post(), $allowParam)) {
                     $vendor_id = $this->post('venderId');
-                    // if(strlen($this->post('pin')) != 4 || strlen($this->post('pin')) != 6) {
-                    //     $MESSAGE = 'Pin must be 4/6 digit.';
-                    //     $responseCode = 304;
-                    // } else  
-                    if(strlen($this->post('tokenNumber')) != 4) {
+                    $allowed_length = array(4,6);
+                    if(!in_array(strlen($this->post('pin')), $allowed_length)) {
+                        $MESSAGE = 'Enter 4 digit PIN. For Prebook, enter 6 digit PIN.';
+                        $responseCode = 304;
+                    } else if(strlen($this->post('tokenNumber')) != 4) {
                         $MESSAGE = 'Vehicle number must be last 4 digit.';
                         $responseCode = 304;
                     } else {
@@ -109,7 +109,7 @@ class Vendor extends REST_Controller {
                                 $responseCode = 304;
                              }
                         } else {
-                            $MESSAGE = 'Vehichle already in parking.';
+                            $MESSAGE = 'Matching last 4 digits found, please enter full vehicle number.';
                             $responseCode = 304;
                         }
                     }
@@ -180,7 +180,7 @@ class Vendor extends REST_Controller {
                         }
                         $response['bill'] = $billAmountDetail;
                         $response['durationOccupied'] = $usage['durationOccupied'];
-                        $response['checkInTime'] = $row->checkin_time;
+                        $response['checkInTime'] = date("d-m-Y, h:i A", strtotime($row->checkin_time));
                         $response['transactionId'] = $row->checkin_id;
                         $response['vehicleType'] = ($row->vehicle_size == 1 ? 'Bike' : 'Car');
                         $response['fullTokenNumber'] = ($row->vehicle_model);
@@ -283,10 +283,10 @@ class Vendor extends REST_Controller {
                     $mobile = $post->mobileNumber;
                     $update_res = $this->usermodel->send_sms($mobile, $text);
                     if($update_res) {   
-                        $MESSAGE = "Pin has been sent to your mobile number.";
+                        $MESSAGE = "PIN has been sent to your mobile number.";
                         $responseCode = 200;   
                      } else {
-                        $MESSAGE = "Pin could not be sent.Try again!";
+                        $MESSAGE = "PIN could not be sent.Try again!";
                         $responseCode = 304;
                      }
                  } else {
@@ -320,10 +320,10 @@ class Vendor extends REST_Controller {
                 $mobile = $data->mobile;
                 $update_res = $this->usermodel->send_sms($mobile, $text);
                 if($update_res) {   
-                    $MESSAGE = "Pin has been sent to your mobile number.";
+                    $MESSAGE = "PIN has been sent to your mobile number.";
                     $responseCode = 200;   
                  } else {
-                    $MESSAGE = "Pin could not be sent. Try again!";
+                    $MESSAGE = "PIN could not be sent. Try again!";
                     $responseCode = 304;
                  }
             } else {

@@ -191,10 +191,9 @@ class Usermodel extends CI_Model {
 
   function send_sms($mobile, $text) 
   {
-return true;
       if($mobile) {
         $text = urlencode($text);
-        $url = "https://mobilnxt.in/api/push?accesskey=VPWEHZOk1bBokhQofLZNbQMMxSRNGF&to=".$mobile."&text=".$text."&from=VACTST";
+        $url = "https://mobilnxt.in/api/push?accesskey=aB7tkIfCbEpPg6coIlYURkCHOBh7bb&to=".$mobile."&text=".$text."&from=PARKNG";
         $res = json_decode(file_get_contents($url));
         if($res->status == 'success') {
           return true;
