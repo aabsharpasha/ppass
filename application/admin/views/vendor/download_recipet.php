@@ -52,7 +52,8 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
            <div class="form-group row">
                  <div class="col-sm-9 offset-sm-3">
-                    <div id="result"></div>
+                    <div id="result"></div></div>
+                    
                     </div>
           </div>
                     
@@ -66,7 +67,9 @@ defined('BASEPATH') OR exit('No direct script access allowed');
           </div>
         
     <!-- Javascript files-->
-    <?php $this->view('includes/footer_js'); ?>
+    <?php $this->view('includes/footer_js'); 
+    $loader_url = base_url('assets/img/ajax-loader.gif');
+    ?>
     <script src="<?php echo base_url(); ?>assets/js/jquery.dataTables.min.js"></script>
     <script src="<?php echo base_url(); ?>assets/js/dataTables.bootstrap.min.js"></script>
     <script>
@@ -75,13 +78,15 @@ defined('BASEPATH') OR exit('No direct script access allowed');
       $("#submit-list").click(function() {
         console.log('hit');
         var data = $('#recpt-form').serialize();
-        console.log(data);
+        //console.log(data);
+        $('#result').html('<div id="loader"><img src="<?php echo $loader_url; ?>" />');
         $.ajax({
           url: "<?php echo base_url('vendor/get_reciept_list'); ?>",
           type: "POST",
           data:{'data': data},
           cache: false,
           success: function(res) {
+           // $('#loader').hide();
             $('#result').html(res);
           }
         });
@@ -97,3 +102,4 @@ margin: 5px;
 list-style: none;}
 .list-download div span {font-size: 17px !important;}
 </style>
+  

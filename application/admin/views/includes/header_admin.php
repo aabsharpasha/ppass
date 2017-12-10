@@ -42,7 +42,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
                 <!-- Messages                        -->
                 
                 <!-- Logout    -->
-                <li style="<?php echo ($hide ? 'display:none':'') ?>" class="nav-item"><a href="<?php echo base_url('login/user_logout'); ?>" class="nav-link logout">Logout<i class="fa fa-sign-out"></i></a></li>
+              
               </ul>
             </div>
           </div>
