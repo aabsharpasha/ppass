@@ -312,14 +312,16 @@ class Usermodel extends CI_Model {
         return $plans;
    }
 
-   function is_active_pass($pin, $vehicle_no, $vehicle_model, $check_in_date) 
+   function is_active_pass($pin, $vehicle_no, $vehicle_model, $check_in_date, $vendor_id) 
    {
       
       if ((strlen(trim($pin)) == 6) && (substr($pin, 0, 1) == 5)) {
-        $pass_details = $this->get_pass_details($vehicle_no, $vehicle_model);
+        $pass_details = $this->get_pass_details($vehicle_no, $vehicle_model, $vendor_id);
+       // print_r($pass_details); exit;
         if($pass_details) {
          // print_r($pass_details); exit;
-          $last_active_date = date("Y-m-d", strtotime($pass_details->plan_start_date." +".$pass_details->plan_duration." days"));
+          $last_active_date = $pass_details->plan_end_date;
+         // echo $last_active_date; exit;
           //echo $check_in_date; exit;
           if(strtotime($check_in_date) <= strtotime($last_active_date)) {
             return true;
@@ -335,15 +337,35 @@ class Usermodel extends CI_Model {
       }
    }
 
-   function get_pass_details($vehicle_no, $vehicle_model) 
+   function get_pass_details($vehicle_no, $vehicle_model, $vendor_id) 
    {
-       $where = array('vehicle_no' => $vehicle_model);
-       $this->db->select('user_plans.plan_id, user_plans.vehicle_no, user_plans.plan_start_date, vendor_plans.plan_duration')
+       $where = array('vehicle_no' => $vehicle_no, 'vendor_id' => $vendor_id);
+       $this->db->select('user_plans.plan_id, user_plans.vehicle_no, user_plans.plan_start_date, vendor_plans.plan_duration, user_plans.plan_end_date, vendor_plans.plan_title')
          ->from('user_plans')
          ->join('vendor_plans', 'user_plans.plan_id = vendor_plans.plan_id')->where($where);
           $result = $this->db->get();
-         // echo $this->db->last_query();  exit;
+        //echo $this->db->last_query();  exit;
         return  $res = $result->row();
+   }
+
+     function is_already_plan($vehicle_no, $vendor_id) 
+   {
+        $pass_details = $this->get_pass_details($vehicle_no, $vehicle_no, $vendor_id);
+        //print_r($pass_details); exit;
+        if($pass_details) {
+         
+          $last_active_date = $pass_details->plan_end_date;
+          //echo $check_in_date; exit;
+          if(strtotime(date('Y-m-d')) <= strtotime($last_active_date)) {
+            return true;
+          } else {
+            return false;
+          }
+        } else {
+          return false;
+        }
+        
+      
    }
 
 }

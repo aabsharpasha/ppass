@@ -90,17 +90,24 @@ class Vendor extends REST_Controller {
                             $where = array('vehicle_no' => $this->post('tokenNumber'), 'is_checkout' => '0', 'vehicle_size' => $vechicle_size, 'vendor_id' => $vendor_id);
                             $resExist = $this->userauth->is_exist_data('checkin_details', $where);
                         }
+                      //  echo $resExist; exit;
                          if(!$resExist) {
                             $res = $this->usermodel->checkin_vendor_insert($this->post());
                             if ($res) {
                                 $mobile = $this->post('mobileNumber');
                                 if($mobile) {
+                                    $vendor = $this->get_vendor_details($vendor_id);
                                     if($this->post('tokenNumber'))
                                         $vehicle_no = $this->post('tokenNumber');
                                     else
                                         $vehicle_no = $this->post('fullTokenNumber');
-                                    $text = 'Your pin number is '.$this->post('pin').' for vehicle no: '.$vehicle_no;
-                                    $update_res = $this->usermodel->send_sms($mobile, $text);
+
+                                    $text = "Dear User, You parked ur vehicle at the ".$vendor->vendor_address." at ".date('d-m-Y, h:i A').". For easy check-out from parking, pls use ur PIN ".$this->post('pin')." at exit.";
+                                    //if pass no check in msg
+                                    $pin = $this->post('pin');
+                                    if (!((strlen(trim($pin)) == 6) && (substr($pin, 0, 1) == 5))) {
+                                        $this->usermodel->send_sms($mobile, $text);
+                                    }
                                 }
                                 $MESSAGE = "Check-in Success";
                                 $responseCode = 200;
@@ -165,11 +172,13 @@ class Vendor extends REST_Controller {
                 if ($rows) {
 
                     foreach($rows as $row) {
-                        if(!$this->usermodel->is_active_pass($row->pin, $row->vehicle_no, $row->vehicle_model, date('Y-m-d',strtotime($row->checkin_time)))) {
-                            $usage = $this->usermodel->calculate_bill_amount($row);
-                            $billAmountDetail = array('billAmount' =>filter_var($usage['billAmount'], FILTER_SANITIZE_NUMBER_INT), 'description' => '');
+                        $usage = $this->usermodel->calculate_bill_amount($row);
+                        if($this->usermodel->is_active_pass($row->pin, $row->vehicle_no, $row->vehicle_model, date('Y-m-d',strtotime($row->checkin_time)),$row->vendor_id)) {
+                             $billAmountDetail = array('billAmount' =>0, 'description' => 'Amount is showing 0 INR because of Active Pass User');
+                            
                         } else {
-                            $billAmountDetail = array('billAmount' =>0, 'description' => 'Amount is showing 0 INR because of Active Pass User');
+                           
+                            $billAmountDetail = array('billAmount' =>filter_var($usage['billAmount'], FILTER_SANITIZE_NUMBER_INT), 'description' => '');
                         }
 
                         $response = array();
@@ -204,9 +213,13 @@ class Vendor extends REST_Controller {
                 // 'transactionId',
                 // 'paymentMode',
                 );
-                 $post = json_decode($this->post('otherInfo'),1);
+                if(is_array($this->post('otherInfo'))) {
+                     $post = $this->post('otherInfo');
+                } else {
+                     $post = json_decode($this->post('otherInfo'),1);
+                }
 //echo 'hello';
-//print_r($this->post()); exit;
+//print_r($post); exit;
 
                 if (checkselectedparams($this->post(), $allowParam)) {
 //                    $post = $this->post('otherInfo');
@@ -216,7 +229,33 @@ class Vendor extends REST_Controller {
                     $where = array('checkin_id' => $transactionId, 'is_checkout' => '0');
                     $row = $this->usermodel->get_data('checkin_details', $where);
                     if($row) {
+                     //  
                          if($this->usermodel->checkout($post, $row)) {
+                            $vendor = $this->get_vendor_details($vendor_id);
+                            if($this->usermodel->is_active_pass($row->pin, $row->vehicle_no, $row->vehicle_model, date('Y-m-d',strtotime("+1 day")),$row->vendor_id)) {
+                                $plan_details = $this->usermodel->get_pass_details($row->vehicle_no, $vehicle_model, $vendor_id);
+                                print_r($plan_details);
+                                $digits = 5;
+                                $pin = str_pad(rand(0, pow(10, $digits)-1), $digits, '0', STR_PAD_LEFT);
+                              //  $days_left = strtotime(date("Y-m-d")) - strtotime(date("Y-m-d",strtotime($
+                                $days_left1 = strtotime(date('Y-m-d')) - strtotime(date("Y-m-d",strtotime($plan_details->plan_start_date)));
+
+                                //echo $days_left/60*60*24; echo '<br />';
+                                $days_left = $plan_details->plan_duration - ($days_left1/60*60*24);
+                            // echo $days_left; exit;
+                                $text = "Dear User, Thanks for using ".$plan_details->plan_title." ParkingPass. You have ".($days_left - 1)." days left in ur ParkingPass. For ur next visit, pls use the PIN 5".$pin." at entry gate.";
+                             //   echo $text; exit;
+                            } else {
+                                if($this->is_forcecheckout($row->checkin_id)) {
+                                    $text = "Dear User, Ur vehicle ".$vehicle_no." forcefully left parking ".$vendor->vendor_address." at ".date('d-m-Y, h:i A').". Ur unpaid bill is Rs ".$row->bill_amount." for ".$row->duration_occupied." hrs incl taxes.";
+                                } else {
+                                    $text = "Dear User, Ur vehicle ".$vehicle_no." checked out from parking at ".$vendor->vendor_address." at ".date('d-m-Y, h:i A').". Ur total bill was Rs ".$row->bill_amount." for ".$row->duration_occupied." incl taxes.";
+                                } 
+                            }
+                            $mobile = $row->mobile;
+                            if($mobile) {
+                                $this->usermodel->send_sms($mobile, $text);
+                            }   
                             $MESSAGE = "Check-out Success";
                             $responseCode = 200;   
                          } else {
@@ -258,7 +297,11 @@ class Vendor extends REST_Controller {
             $allowParam = array(
             'otherInfo'
             );
-	    $post = json_decode($this->post('otherInfo'));
+	    if(is_array($this->post('otherInfo'))) {
+                     $post = (object) $this->post('otherInfo');
+                } else {
+                     $post = json_decode($this->post('otherInfo'),1);
+                }
 
             if (1) {
                 if (isset($_FILES['photo']) && $_FILES['photo']['name'] != '') {
@@ -276,10 +319,10 @@ class Vendor extends REST_Controller {
                     }
                 }
                 $update_res = $this->usermodel->updateProfilePic($uploaded_files['file_name'], $post);
-
                 if($update_res) {
                     $data = $this->usermodel->get_data('checkin_details', array('checkin_id' => $post->transactionId));
-                    $text = 'Your pin is '.$data->pin.' for vechicle no: '.$data->vehicle_no;
+                    $vendor = $this->get_vendor_details($data->vendor_id);
+                    $text = "Dear User, You parked ur vehicle at ".$vendor->vendor_address." at ".date('d-m-Y, h:i A', strtotime($data->checkin_time)).". For easy check-out from parking, pls use the PIN ".$data->pin." at exit.";
                     $mobile = $post->mobileNumber;
                     $update_res = $this->usermodel->send_sms($mobile, $text);
                     if($update_res) {   
@@ -348,7 +391,7 @@ class Vendor extends REST_Controller {
             'venderId',
             );
             if (checkselectedparams($this->post(), $allowParam)) {
-                $update_res = $this->usermodel->get_data('pages', array('vendor_id' => $this->post('venderId')));
+                $update_res = $this->usermodel->get_data('pages', array('page_id' => 1));
                 if($update_res) {
                     $MESSAGE = "Success";
                     $responseCode = 200;   
@@ -463,7 +506,7 @@ class Vendor extends REST_Controller {
                         $this->load->model('backend');
                         
                         $where = array('email' => $this->post('email'));
-                        $plan_active = 0;//$this->userauth->is_plan_active('users', $where);
+                        $plan_active = $this->usermodel->is_already_plan($this->post('tokenNumber'), $this->post('venderId'));
                     
                          if(!$plan_active) {
                             $post = $this->post();
@@ -472,14 +515,24 @@ class Vendor extends REST_Controller {
                             $data['mobile'] = $this->post('mobileNumber');
                             $data['plan_id'] = $this->post('planId');
                             $data['payment_mode'] = $this->post('paymentMode');
+                            $plan_detail = $this->usermodel->get_data('vendor_plans', array('plan_id' => $this->post('planId')));
+                            $expire_time_db = date("Y-m-d", strtotime("+ ".$plan_detail->plan_duration." days"));
+                            $data['plan_end_date'] = $expire_time_db;
+
 
                             $res = $this->backend->insert_data($data, 'user_plans');
-                            $plan_detail = $this->usermodel->get_data('vendor_plans', array('plan_id' => $this->post('planId')));
+                            
 
                             if ($res) {
-                                // $digits = 5;
-                                // echo str_pad(rand(0, pow(10, $digits)-1), $digits, '0', STR_PAD_LEFT);
+                                $digits = 5;
+                                $pin = str_pad(rand(0, pow(10, $digits)-1), $digits, '0', STR_PAD_LEFT);
                                 $vehicle_no = $this->post('tokenNumber');
+                                $vendor = $this->get_vendor_details($plan_detail->vendor_id);
+                                $expire_time = date("d-m-Y", strtotime("+ ".$plan_detail->plan_duration." days"));
+                                $text = "Dear User, Thanks for opting for ".$plan_detail->plan_title." ParkingPass for ".$vendor->vendor_address." for ur vehicle ".$data['vehicle_no'].". The validity of ParkingPass is from ".date('d-m-Y')." to ".$expire_time.". For easy entry at the parking, pls use the PIN 5".$pin." at entry gate. Be assured, we will send you a new PIN for every visit.";
+                                $mobile = $data['mobile'];
+                                $this->usermodel->send_sms($mobile, $text);
+
                                 $MESSAGE = "$plan_detail->plan_title activated successfully for vehicle number $vehicle_no";
                                 $responseCode = 200;
                              } else {
@@ -505,6 +558,19 @@ class Vendor extends REST_Controller {
             } catch (Exception $ex) {
                 throw new Exception('Error in VendorLogin function - ' . $ex);
             }
+    }
+
+    function is_forcecheckout($checkin_id) {
+        $res = $this->db->get_where('checkout_details', array('checkin_id' => $checkin_id))->row();
+        if($res->is_force_checkout)
+            return true;
+        else
+            return false;
+    }
+
+    function get_vendor_details($vendor_id) {
+        $res = $this->db->get_where('vendors', array('vendor_id' => $vendor_id));
+        return $vendor = $res->row();
     }
     
     
