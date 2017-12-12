@@ -48,9 +48,13 @@ class Backend extends CI_Model {
       $this->db->from($table);
      if($where)
       $this->db->where($where);
-      if(!empty($search)){
+      if(!empty($search)) {
+        if($table == 'users') {
+           $this->db->like('user_name', $search);
+        } else if($table == 'vendor'){
          $this->db->like('vendor_name', $search);
          $this->db->or_like('vendor_address', $search);
+       }
       }
       if(!empty($limit)){
         $this->db->limit($limit, $start);
@@ -67,10 +71,15 @@ class Backend extends CI_Model {
   function get_row_count($table, $search=NULL, $cond = ''){
       $this->db->select('*');
       $this->db->from($table);
+      if($cond)
       $this->db->where($cond);
-      if(!empty($search)){
+      if(!empty($search)) {
+        if($table == 'users') {
+           $this->db->like('user_name', $search);
+        } else if($table == 'vendor') {
          $this->db->like('vendor_name', $search);
          $this->db->or_like('vendor_address', $search);
+       }
       }
       $query = $this->db->get();
       $num = $query->num_rows();

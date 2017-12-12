@@ -260,6 +260,7 @@ class Vendor extends CI_Controller {
             $start = $this->input->post('start');
             $draw  = $this->input->post('draw');
             $search = $this->input->post('search[value]');
+            //echo $search; exit;
             if(!empty($search)){
               $start = 0;
             }
