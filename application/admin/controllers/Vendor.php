@@ -41,10 +41,11 @@ class Vendor extends CI_Controller {
         
         function get_reciept_list() {
           parse_str($this->input->post('data'));
-          $where = array('vendor_id' => $vendor_id, 'vehicle_no' => $vehicle_number, 'pin' => $vehicle_pin, 'is_checkout' => '1');
+          $where = array('vendor_id' => $vendor_id, 'pin' => $vehicle_pin, 'is_checkout' => '1');
          $this->db->select('checkin_details.checkin_id, checkin_details.vehicle_no, checkout_details.duration_occupied, checkin_details.checkin_time, checkout_details.checkout_time, checkout_details.paid_amount, checkout_details.checkout_time')
          ->from('checkin_details')
          ->join('checkout_details', 'checkin_details.checkin_id = checkout_details.checkin_id')->where($where);
+         $this->db->where('(vehicle_model = "'.$vehicle_number.'" OR vehicle_no = "'.$vehicle_number.'")');
        //  echo "hi".$this->db->last_query(); exit;
           $result = $this->db->get();
           $res = $result->result();
@@ -262,11 +263,12 @@ class Vendor extends CI_Controller {
             if(!empty($search)){
               $start = 0;
             }
+             $cond = array('user_type' => 'vendor');
             //echo '<pre>'; print_r($this->backend->get_data('excel_data', $limit, $start)); exit;
-            $total_rows = $this->backend->get_row_count('users', $search);
+            $total_rows = $this->backend->get_row_count('users', $search, $cond);
+           // print_r($total_rows); exit;
             $this->load->model('User');
             $res = array();
-            $cond = array('user_type' => 'vendor');
             $result = $this->backend->get_data('users', $limit, $start, $search, $cond);
             $i = 0; $j = $start+1;
             if(!empty($result)){

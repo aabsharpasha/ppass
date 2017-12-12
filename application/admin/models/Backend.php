@@ -64,9 +64,10 @@ class Backend extends CI_Model {
       }
   }
   
-  function get_row_count($table, $search=NULL){
+  function get_row_count($table, $search=NULL, $cond = ''){
       $this->db->select('*');
       $this->db->from($table);
+      $this->db->where($cond);
       if(!empty($search)){
          $this->db->like('vendor_name', $search);
          $this->db->or_like('vendor_address', $search);

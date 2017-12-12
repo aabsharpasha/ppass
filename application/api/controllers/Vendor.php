@@ -74,14 +74,23 @@ class Vendor extends REST_Controller {
                 if (checkselectedparams($this->post(), $allowParam)) {
                     $vendor_id = $this->post('venderId');
                     $allowed_length = array(4,6);
+
                     if(!in_array(strlen($this->post('pin')), $allowed_length)) {
+
                         $MESSAGE = 'Enter 4 digit PIN. For Prebook, enter 6 digit PIN.';
                         $responseCode = 304;
                     } else if(strlen($this->post('tokenNumber')) != 4) {
                         $MESSAGE = 'Vehicle number must be last 4 digit.';
                         $responseCode = 304;
                     } else {
-                        $this->load->library('userauth');
+                         $where = array('vendor_id' => $this->post('vendor_id'), 'vehicle_no' => $this->post('tokenNumber'), 'pin' =>  $this->post('pin'));
+                         $is_prebook = $this->db->get_where('customer_booking', $where)->row();
+                        
+                         if((strlen($this->post('pin')) == 6) && !$is_prebook) {
+                                     $MESSAGE = 'Enter 4 digit PIN. For Prebook, enter 6 digit PIN.';
+                                    $responseCode = 304;
+                         } else {
+                            $this->load->library('userauth');
                         $vechicle_size = $this->post('goodsSize');
                         if($this->post('fullTokenNumber')) {
                             $where = array('vehicle_model' => $this->post('fullTokenNumber'), 'is_checkout' => '0', 'vehicle_size' => $vechicle_size, 'vendor_id' => $vendor_id);
@@ -119,6 +128,8 @@ class Vendor extends REST_Controller {
                             $MESSAGE = 'Matching last 4 digits found, please enter full vehicle number.';
                             $responseCode = 304;
                         }
+                        }
+                        
                     }
                 } else {
                     $MESSAGE = MSG302;
@@ -300,7 +311,7 @@ class Vendor extends REST_Controller {
 	    if(is_array($this->post('otherInfo'))) {
                      $post = (object) $this->post('otherInfo');
                 } else {
-                     $post = json_decode($this->post('otherInfo'),1);
+                     $post = json_decode($this->post('otherInfo'));
                 }
 
             if (1) {
