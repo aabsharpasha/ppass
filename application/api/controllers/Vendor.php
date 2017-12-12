@@ -83,7 +83,7 @@ class Vendor extends REST_Controller {
                         $MESSAGE = 'Vehicle number must be last 4 digit.';
                         $responseCode = 304;
                     } else {
-                         $where = array('vendor_id' => $this->post('vendor_id'), 'vehicle_no' => $this->post('tokenNumber'), 'pin' =>  $this->post('pin'));
+                         $where = array('vendor_id' => $this->post('vendor_id'), 'vehicle_no' => $this->post('fullTokenNumber'), 'pin' =>  $this->post('pin'));
                          $is_prebook = $this->db->get_where('customer_booking', $where)->row();
                         
                          if((strlen($this->post('pin')) == 6) && !$is_prebook) {

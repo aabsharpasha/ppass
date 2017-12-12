@@ -68,7 +68,7 @@ class Backend extends CI_Model {
       }
   }
   
-  function get_row_count($table, $search=NULL, $cond = ''){
+  function get_row_count($table, $search=NULL, $cond = '') {
       $this->db->select('*');
       $this->db->from($table);
       if($cond)
