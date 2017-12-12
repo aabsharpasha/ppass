@@ -339,7 +339,7 @@ class Usermodel extends CI_Model {
 
    function get_pass_details($vehicle_no, $vehicle_model, $vendor_id) 
    {
-       $where = array('vehicle_no' => $vehicle_no, 'vendor_id' => $vendor_id);
+       $where = array('vehicle_no' => $vehicle_model, 'vendor_id' => $vendor_id);
        $this->db->select('user_plans.plan_id, user_plans.vehicle_no, user_plans.plan_start_date, vendor_plans.plan_duration, user_plans.plan_end_date, vendor_plans.plan_title')
          ->from('user_plans')
          ->join('vendor_plans', 'user_plans.plan_id = vendor_plans.plan_id')->where($where);
