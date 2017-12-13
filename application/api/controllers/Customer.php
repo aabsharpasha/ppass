@@ -51,42 +51,42 @@ class Customer extends REST_Controller {
             }
     }
 
-    function register_post() 
+    function verify_user_post() 
     {
             try {
                 $allowParam = array(
-                'user_name',
-                'password',
-                'email'
+                 'otp',
+                'mobile',
                 );
           
                 if (checkselectedparams($this->post(), $allowParam)) {
-                    $vendor_id = $this->post('venderId');
-                    
                         $this->load->model('backend');
-                        
-                        $where = array('email' => $this->post('email'));
+                        $where = array('mobile' => $this->post('mobile'), 'user_type' => 'customer');
                         $resExist = $this->userauth->is_exist_data('users', $where);
-                    
+                        $verify = $this->usermodel->verify_otp($this->post('mobile'), $this->post('otp'));
                          if(!$resExist) {
                             $data = $this->post();
-                            $data['password'] = md5($this->post('password'));
+                            unset($data['otp']);
+                           // $data['password'] = md5($this->post('password'));
+
                             $res = $this->backend->insert_data($data, 'users');
                           // print_r($res); exit;
                             $user = $this->usermodel->get_userdata($res);
 
-                            if ($res) {
-                                $MESSAGE = "Registration Success";
-                                $responseCode = 200;
-                             } else {
-                                $MESSAGE = MSG304;
-                                $responseCode = 304;
-                             }
-                        } else {
-                            $MESSAGE = 'User Email already exist.';
+                         } else {
+                            $user = $this->db->get_where('users', $where)->row();
+                         }
+                        if ($verify == 'success') {
+                            $MESSAGE = "OTP verified";
+                            $responseCode = 200;
+                         } else if($verify == 'incorrect'){
+                            $MESSAGE == 'Incorrect OTP entered.';
                             $responseCode = 304;
-                        }
-                    
+                         } else {
+                            $MESSAGE = "OTP expired. OTP is valid for 15 minutes.";
+                            $responseCode = 304;
+                         }
+                
                 } else {
                     $MESSAGE = MSG302;
                     $responseCode = 302;
@@ -95,7 +95,8 @@ class Customer extends REST_Controller {
                 $resp = array( 
                             'responseMessage' => $MESSAGE,
                             'responseCode'    => $responseCode,
-                            'userData' => $user
+                            'userData' => $user,
+                            'vehilceList' => $this->usermodel->getVehiclesListByUser($user->user_id),
                         );
                
                 $this->response($resp, 200);
@@ -284,6 +285,63 @@ class Customer extends REST_Controller {
             } catch (Exception $ex) {
                 throw new Exception('Error in VendorLogin function - ' . $ex);
             }
+    }
+
+    function generate_otp_user_post() 
+    {
+        try {
+                $allowParam = array(
+                'mobile',
+                );
+          
+                if (checkselectedparams($this->post(), $allowParam)) {
+                    if(strlen($this->post('mobile')) != 10) {
+                        $MESSAGE = 'Please enter correct mobile number';
+                        $responseCode = 304;
+                    } else {
+
+                        $where = array('mobile' => $this->post('mobile'), 'user_type' => 'customer');
+                        $resExist = $this->userauth->is_exist_data('users', $where);
+                        $res = $this->usermodel->generate_otp($this->post('mobile'));
+                        if($res) {
+                            
+                            if ($resExist) {
+                                $user = $this->db->get_where('users', $where)->row();
+                                $user_id = $user->user_id;
+                                $MESSAGE = "OTP has been sent to given mobile no";
+                                $responseCode = 200;
+                                $user_exist = 1;
+                                  
+                                
+
+                             } else {
+                                $MESSAGE = "OTP has been sent to given mobile no";
+                                $responseCode = 200;
+                                $user_exist = 0;
+                             }
+                        } else {
+                             $MESSAGE = 'Please try again!';
+                                $responseCode = 304;
+                        }
+                    }
+                } else {
+                    $MESSAGE = MSG302;
+                    $responseCode = 302;
+                }
+               
+                $resp = array( 
+                            'responseMessage' => $MESSAGE,
+                            'responseCode'    => $responseCode,
+                            'userData' => $user,
+                            'user_exist' => $user_exist,
+                            'vehilcleList' =>  $vehicleList = $this->usermodel->getVehiclesListByUser($user_id)
+                                
+                        );
+               
+                $this->response($resp, 200);
+            } catch (Exception $ex) {
+                throw new Exception('Error in VendorLogin function - ' . $ex);
+            }     
     }
     
 }

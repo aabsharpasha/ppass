@@ -262,7 +262,7 @@ class Usermodel extends CI_Model {
     {
       $vendor_id = $post['vendor_id'];
       $pin = mt_rand(100000, 999999);
-      while($this->isUsed($pin)) {
+      while($this->isUsed($pin) || substr($pin, 0, 1) == 5) {
         $pin = mt_rand(100000, 999999);
       }
       
@@ -368,4 +368,39 @@ class Usermodel extends CI_Model {
       
    }
 
+   function generate_otp($mobile) {
+      $otp = mt_rand(1000, 9999);
+      $text = "OTP for PPASS is ".$otp;
+      $data = array(
+          'otp' => $otp,
+          'mobile' => $mobile
+      );
+      
+      if($this->db->insert('user_otp', $data)) {
+        return  $this->send_sms($mobile, $text);
+      }
+
+      return false;
+  }
+
+  function verify_otp($mobile, $otp) {
+      $where = array('mobile' => $mobile, 'otp' => $otp);
+      $res = $this->db->get_where('user_otp', $where)->row();
+     // print_r($res); exit;
+      if($res) {
+        //echo date("y-m-d H:i:s",strtotime($res->generated_at." +15 minutes")); exit;
+        if((strtotime($res->generated_at." +15 minutes")) < time()) {
+          $return = 'expire';
+        } else {
+          $return = 'success';
+        } 
+      } else {
+        $return = 'incorrect';
+      }
+      
+      return $return;
+  }
+
 }
+
+
