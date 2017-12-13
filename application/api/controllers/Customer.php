@@ -68,7 +68,7 @@ class Customer extends REST_Controller {
                             $data = $this->post();
                             unset($data['otp']);
                            // $data['password'] = md5($this->post('password'));
-
+                            $data['user_type'] = 'customer';
                             $res = $this->backend->insert_data($data, 'users');
                           // print_r($res); exit;
                             $user = $this->usermodel->get_userdata($res);
