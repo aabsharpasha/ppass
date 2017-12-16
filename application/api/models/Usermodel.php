@@ -265,8 +265,12 @@ class Usermodel extends CI_Model {
       while($this->isUsed($pin) || substr($pin, 0, 1) == 5) {
         $pin = mt_rand(100000, 999999);
       }
-      
-      $hours_booked = ceil((strtotime($post['end_time']) - strtotime($post['start_time'])) / (60*60));
+      //echo  $post['end_time']; exit;
+     $end_time = (int) $post['end_time'];
+     //$end_time = strtotime("+".$end_time." hours", strtotime($post['start_time']));
+      //$hours_booked = ceil($post['end_time'] - strtotime($post['start_time'])) / (60*60);
+      $hours_booked = $end_time;
+      //echo $hours_booked; exit;
       $data = array(
                 'vendor_id'     => $post['vendor_id'],
                 'user_id'       => $post['user_id'],
