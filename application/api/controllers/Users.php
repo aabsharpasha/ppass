@@ -7,7 +7,6 @@ require(APPPATH . '/libraries/REST_Controller.php');
 
 /**
  * Description of login
- * @author OpenXcell Technolabs
  */
 class Users extends REST_Controller {
 

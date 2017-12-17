@@ -7,7 +7,7 @@ require(APPPATH . '/libraries/REST_Controller.php');
 
 /**
  * Description of login
- * @author OpenXcell Technolabs
+
  */
 class Vendor extends REST_Controller {
 
