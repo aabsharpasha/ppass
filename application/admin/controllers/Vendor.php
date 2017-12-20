@@ -41,26 +41,82 @@ class Vendor extends CI_Controller {
         
         function get_reciept_list() {
           parse_str($this->input->post('data'));
-          $where = array('vendor_id' => $vendor_id, 'pin' => $vehicle_pin, 'is_checkout' => '1');
-         $this->db->select('checkin_details.checkin_id, checkin_details.vehicle_no, checkout_details.duration_occupied, checkin_details.checkin_time, checkout_details.checkout_time, checkout_details.paid_amount, checkout_details.checkout_time')
+          $where = array('vendor_id' => $vendor_id, 'pin' => trim($vehicle_pin));
+         $this->db->select('checkin_details.checkin_id, checkin_details.vehicle_no, checkout_details.duration_occupied, checkin_details.checkin_time, checkout_details.checkout_time, checkout_details.paid_amount, checkout_details.checkout_time, checkin_details.is_checkout')
          ->from('checkin_details')
          ->join('checkout_details', 'checkin_details.checkin_id = checkout_details.checkin_id')->where($where);
-         $this->db->where('(vehicle_model = "'.$vehicle_number.'" OR vehicle_no = "'.$vehicle_number.'")');
-       //  echo "hi".$this->db->last_query(); exit;
+         $this->db->where('(vehicle_model = "'.trim($vehicle_number).'" OR vehicle_no = "'.trim($vehicle_number).'") AND checkin_details.created_date >= DATE_SUB(NOW(), INTERVAL '.(REPORT_FETCH_HOURS).' HOUR)');
           $result = $this->db->get();
+          //echo $this->db->last_query();
           $res = $result->result();
           if($res) {
             $location = $this->get_vendor_details($vendor_id);
+            $pricing = $this->db->get_where('pricing_details', array('vendor_id' => $vendor_id))->row();
             foreach($res as $line) {
-              $ret_str .= '<li class="list-download">';
-              $ret_str .= "<div><span>Vehicle No: </span> ".$line->vehicle_no."</div>";
-              $ret_str .= "<div><span>Location: </span> ".$location->vendor_address."</div>";
-              $ret_str .= "<div><span>Duration: </span> ".$line->duration_occupied."</div>";
-              $ret_str .= "<div><span>Check In time: </span> ".date("Y-m-d h:i A",strtotime($line->checkin_time))."</div>";
-              $ret_str .= "<div><span>Check Out time: </span> ".date("Y-m-d h:i A",strtotime($line->checkout_time))."</div>";
-              $ret_str .= "<div><span>Amount Paid: </span> ".$line->paid_amount."</div>";
-              $ret_str .= "<div><a target='_blank' href=".base_url('vendor/download_pdf/'.$line->checkin_id.'/'.$vendor_id).">Download</a></div>";
-              $ret_str .= '</li>';
+              // $ret_str .= '<li class="list-download">';
+              // $ret_str .= "<div><span>Vehicle No: </span> ".$line->vehicle_no."</div>";
+              // $ret_str .= "<div><span>Location: </span> ".$location->vendor_address."</div>";
+              // $ret_str .= "<div><span>Duration: </span> ".$line->duration_occupied."</div>";
+              // $ret_str .= "<div><span>Check In time: </span> ".date("Y-m-d h:i A",strtotime($line->checkin_time))."</div>";
+              // $ret_str .= "<div><span>Check Out time: </span> ".date("Y-m-d h:i A",strtotime($line->checkout_time))."</div>";
+              // $ret_str .= "<div><span>Amount Paid: </span> ".$line->paid_amount."</div>";
+              // $ret_str .= "<div><a target='_blank' href=".base_url('vendor/download_pdf/'.$line->checkin_id.'/'.$vendor_id).">Download</a></div>";
+              // $ret_str .= '</li>';
+
+
+
+
+              $ret_str = '<div class="order-summary">
+    <div class="summary-block">
+        <div class="Order-logo"> <img src="'.base_url().'/assets/img/logo.png" alt=""><h4>Parking Pass</h4></div>
+        <h5>'.$location->vendor_name.' ('.$vendor_id.')</h4>
+        <h5>'.$location->vendor_address.'</h4>
+        <h5>Auth. By- '.AUTHBY.'</h5>';
+        if($line->is_checkout) {
+          $ret_str.= '<h5>GSTIN NO.-'.GSTIN.'</h5>';
+        }
+        $ret_str.='
+        
+            <div class="center line-div"> <span class="cols-1">Date: </span>  <span class="cols-3">'.date("d-m-Y",strtotime($line->checkin_time)).', In Time: '.date("h:i A",strtotime($line->checkin_time)).'</span>
+            </div>';
+         if($line->is_checkout) {
+         $ret_str.='<div class="center line-div"> <span class="cols-1">Out: </span>  <span class="cols-3">'.date("h:i A",strtotime($line->checkin_time)).', Duration: '.$line->duration_occupied.'</span>
+        </div>';
+          }
+           $ret_str.='<div class="center line-div">
+                <div class="order-product-name clearfix"> <span class="cols-3"<strong class="cols-3">Vehicle. </strong></span> <span class="cols-2"></span> <span class="cols-3"><strong class="cols-3">'.$line->vehicle_no.'</strong></span>
+                </div>
+            </div>';
+            
+            if($line->is_checkout) {
+           $ret_str.='<div class="center line-div">
+                <div class="order-total total-product-price clearfix"> <span class="cols-1"><strong class="cols-3">Amount Paid:</strong> <strong class="cols-3">'.$line->paid_amount.' </strong><br />
+                All fees and tax inclusive!
+                </div>
+            </div>';
+          } else {
+            if($line->vehicle_size == 1) {
+               $charges = "Rs: ".$pricing->small_first_hr_rate." + ".$pricing->small_hourly_rate;
+            } else {
+               $charges = "Rs: ".$pricing->big_first_hr_rate." + ".$pricing->big_hourly_rate; 
+            }
+           
+               $ret_str.='<div class="center line-div">
+                <div class="order-total total-product-price clearfix"> <span class="cols-1"><strong class="cols-3">Charges:</strong> <strong class="cols-3">'.$charges.' per hour <br /></strong>
+              
+                </div>
+            </div>';
+          }
+    $ret_str.='<div>&nbsp;&nbsp;&nbsp;&nbsp;||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||</div><div>&nbsp;&nbsp;&nbsp;&nbsp;||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||</div>';
+
+        
+        $ret_str.='
+        <h4>ppass-000'.$line->checkin_id.'</h4>
+        <div class="past-btn"> <a target="_blank" href="'.base_url().'vendor/download_pdf/'.$line->checkin_id.'/'.$vendor_id.'" class="btn">Download</a>
+        </div>
+    </div>
+    <div style="clear:both;"></div>
+</div>';
              
             }
             // $ret_str .= '</ul>';
@@ -68,7 +124,7 @@ class Vendor extends CI_Controller {
             $ret_str = 'No Match Found.';
           }
 
-          echo '<ul>'.$ret_str.'</ul>'; exit;
+          echo $ret_str; exit;
           
         }
 
@@ -111,17 +167,13 @@ class Vendor extends CI_Controller {
 
         function download_pdf($id, $vendor_id) 
         {
-            // As PDF creation takes a bit of memory, we're saving the created file in /downloads/reports/
-                    //echo FCPATH; exit;
                     $filename = "ppass_".time();
                     $pdfFilePath = FCPATH."downloads/reports/$filename.pdf";
                     $data['page_title'] = 'PPASS'; // pass data to the view
 
                     if (file_exists($pdfFilePath) == FALSE)
                     {
-
-                     // ini_set('memory_limit','32M'); // boost the memory limit if it's low ;)
-        
+      
         $where = array('checkin_details.checkin_id' => $id);
          $this->db->select('checkin_details.checkin_id, checkin_details.vehicle_no, checkin_details.vehicle_model, checkout_details.duration_occupied, checkin_details.checkin_time, checkout_details.checkout_time, checkout_details.paid_amount, checkout_details.checkout_time')
          ->from('checkin_details')
@@ -390,8 +442,7 @@ class Vendor extends CI_Controller {
             if(!empty($search)){
               $start = 0;
             }
-            //echo '<pre>'; print_r($this->backend->get_data('excel_data', $limit, $start)); exit;
-            $total_rows = $this->backend->get_row_count('users', $search);
+            $total_rows = $this->backend->get_row_count('pricing_details', $search);
             $this->load->model('User');
             $res = array();
             $result = $this->backend->get_data('pricing_details', $limit, $start, $search);

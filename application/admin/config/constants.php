@@ -1,5 +1,9 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
+/* You may change from here */
+define('GSTIN', 2285645852582);
+define('AUTHBY', "Parking Pass Vendor");
+define('REPORT_FETCH_HOURS', 48);
 
 /*
 |--------------------------------------------------------------------------
@@ -12,6 +16,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 |
 */
 defined('SHOW_DEBUG_BACKTRACE') OR define('SHOW_DEBUG_BACKTRACE', TRUE);
+
 
 /*
 |--------------------------------------------------------------------------
