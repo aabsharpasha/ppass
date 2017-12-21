@@ -29,9 +29,9 @@ defined('BASEPATH') OR exit('No direct script access allowed');
               <!-- Navbar Header-->
               <div class="navbar-header">
                 <!-- Navbar Brand --><a href="#" class="navbar-brand">
-                  <div class="brand-text brand-big hidden-lg-down"><strong>PPASS</strong></div>
-                  <div class="brand-text brand-small"><strong>DB</strong></div></a>
-                <!-- Toggle Button--><a id="toggle-btn" href="#" class="menu-btn active"><span></span><span></span><span></span></a>
+                  <div class="brand-text brand-big hidden-lg-down"><strong><img width=200 src="<?php echo base_url() ?>assets/img/logo-full.png" /></strong></div>
+                  <div class="brand-text brand-small"><strong>Parking Pass</strong></div></a>
+                <!-- Toggle Button--><!-- <a id="toggle-btn" href="#" class="menu-btn active"><span></span><span></span><span></span></a> -->
               </div>
               <!-- Navbar Menu -->
               <ul class="nav-menu list-unstyled d-flex flex-md-row align-items-md-center">

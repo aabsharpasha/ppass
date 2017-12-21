@@ -50,18 +50,16 @@ defined('BASEPATH') OR exit('No direct script access allowed');
                      <!--  <a href="<?php echo base_url('vendor/users') ?>" id="cancel" name="cancel" class="btn btn-default">Cancel</a> -->
                     </div>
           </div>
-
+          </form>
            <div class="form-group row">
                  <div class="col-sm-9 offset-sm-3">
-                    <div id="result">
-                       Fill above details and click Submit button to see Details
+                   <div id="result">
+                        
                     </div>
-                  </div>
-                    
-            </div>
+                </div>
           </div>
                     
-                </form>
+                
           </section>
          
           </div>
@@ -115,75 +113,10 @@ font-size: 15px !important;
 }
 .list-download div span {font-size: 17px !important;}
 
-.select2-container--default .select2-selection--single {
- border: 1px solid #e6e6e6 !important;
- 
-  color:#777 !important;
-}
-
-.select2-container--default .select2-selection--single .select2-selection__rendered {
-  color:none !important;
-}
-
-/* style for reciept start here */
-.summary-block {
-    background: url(<?php echo base_url('assets') ?>/img/order-summary-mid.png) left top no-repeat;
-        background-size: auto auto;
-    position: relative;
-    padding: 4px 31px 0;
-    background-size: 313px 100%;
-    padding: 4px 16px 0;
-}
-
-ul li:first-child {
-    border-top: 1px solid #a2a2a3;
-}
-#result h4 {
-    font-size: 14px;
-    /*font-family: 'interstatebold';*/
-    text-align: center;
-    text-transform: uppercase;
-    margin: 12px 0 7px;
-
-}
-
-#result h5 {
-    font-size: 12px;
-    /*font-family: 'interstatebold';*/
-    text-align: center;
-    text-transform: uppercase;
-    margin: 12px 0 7px;
-}
-.summary-block:after {
- background:url(<?php echo base_url('assets') ?>/img/order-summary-top.png) left top no-repeat;
- position:absolute;
- top:-12px;
- height:12px;
- left:1px;
- width:312px;
- content:"";
-}
-.summary-block .Order-logo {
-    text-align: center;
-}
- .order-summary {
-    
-  /*  float: right;*/
-    color: #0a0a0a;
-    background: url(<?php echo base_url('assets') ?>/img/order-summary-bottom.png) left bottom no-repeat; padding-bottom: 62px;
-    margin-top: 12px;
-    margin-right: 94px;
-}
-
-#result .order-summary {
-    color: #0a0a0a;
-}
-
-.center {text-align:center;}
 
 
 
-#result ul li {
+#result  {
     list-style: none !important;
     font-family: Courier;
     color: #0a0a0a;
@@ -193,8 +126,127 @@ ul li:first-child {
     line-height: 1.2;
 }
 
-#result {background: grey;
-padding: 20px 0px 20px 5px;}
+
+#d-wrapper {
+background-color: #fff;
+margin-bottom: 2px;
+}
+#d-wrapper * {
+
+margin:0;
+padding:0;}
+.center {text-align: center;}
+#d-wrapper  div.sep {
+    min-height: 200px;
+    padding: 32px 0;
+
+  }
+
+#d-wrapper  .zig-zag-top:before{
+    background: 
+          linear-gradient(-45deg, #1ba1e2 16px, red 16px, blue 16px,  transparent 0), 
+          linear-gradient(45deg, #1ba1e2 16px, transparent 0);
+        background-position: left top;
+        background-repeat: repeat-x;
+        background-size: 22px 32px;
+        content: " ";
+        display: block;
+
+        height: 32px;
+    width: 100%;
+
+    position: relative;
+    bottom: 64px;
+    left:0;
+  }
+
+  .downlink {color: #fff;
+font-style: underline;
+padding: 15px !important;
+float: right;
+margin: 20px;
+font:arial;}
+
+#d-wrapper  div > * {
+   /* margin: 0 19px;*/
+    text-align:center;
+  }
+
+#d-wrapper  .zig-zag-bottom{
+    margin: 32px 0;
+    margin-top: 0;
+    background: #1ba1e2;
+  }
+
+#d-wrapper  .zig-zag-top{
+    margin: 32px 0;
+    margin-bottom: 0;
+      background: #1ba1e2;
+  }
+
+#d-wrapper  .zig-zag-bottom,
+#d-wrapper  .zig-zag-top{
+        padding: 32px 0;
+  }
+
+#d-wrapper  h1{
+      font-size:2em;
+      text-align:center;
+      color:#fff;
+      font-family:"PT Sans Narrow", "Fjalla One", sans-serif;
+      font-weight:900;
+      text-shadow:1px 1px 0 #1b90e2, 2px 2px 0 #1b90e2, 3px 3px 0 #1b90e2, 4px 4px 0 #1b90e2, 5px 5px 0 #1b90e2;
+
+  }
+
+#d-wrapper  div.sep p,
+#d-wrapper  div.sep h1 {
+    text-shadow:1px 1px 0 #888, 2px 2px 0 #888, 3px 3px 0 #888, 4px 4px 0 #888, 5px 5px 0 #888;
+    color: #fff;
+  }
+
+#d-wrapper  h1{
+     font-size:4em;
+  }
+
+#d-wrapper  .zig-zag-bottom:after{
+    background: 
+          linear-gradient(-45deg, transparent 16px, #1ba1e2 0), 
+          linear-gradient(45deg, transparent 16px, #1ba1e2  0);
+        background-repeat: repeat-x;
+    background-position: left bottom;
+        background-size: 22px 32px;
+        content: "";
+        display: block;
+
+    width: 100%;
+    height: 32px;
+
+      position: relative;
+    top:64px;
+    left:0px;
+  }
+
+#d-wrapper  p{
+    text-align: center;
+  }
+
+#d-wrapper  p:not(:last-child) {
+    margin-bottom: 20px;
+  }
+
+
+p {
+  text-align: center;
+  
+  
+}
+.auth{
+  text-decoration: overline;
+  color: #999;
+  font-size: 2em;
+}
+
 
 </style>
 
