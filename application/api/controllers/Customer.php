@@ -17,6 +17,7 @@ class Customer extends REST_Controller {
 
         $this->load->model('usermodel');
     }
+    
     function login_post() 
     {
             try {
@@ -156,10 +157,10 @@ class Customer extends REST_Controller {
                 );
           
                 if (checkselectedparams($this->post(), $allowParam)) {
-                    if(strlen($this->post('vehicle_number')) != 4) {
-                        $MESSAGE = 'Vehicle number must be last 4 digit.';
-                        $responseCode = 304;
-                    } else {
+                    // if(strlen($this->post('vehicle_number')) != 4) {
+                    //     $MESSAGE = 'Vehicle number must be last 4 digit.';
+                    //     $responseCode = 304;
+                    // } else {
                             $where = array('vehicle_number' => $this->post('vehicle_number'), 'user_id' => $this->post('user_id'));
                             $resExist = $this->userauth->is_exist_data('user_vehicles', $where);
                         
@@ -177,7 +178,7 @@ class Customer extends REST_Controller {
                             $MESSAGE = 'Vehichle already added.';
                             $responseCode = 304;
                         }
-                    }
+                    
                 } else {
                     $MESSAGE = MSG302;
                     $responseCode = 302;
@@ -342,6 +343,39 @@ class Customer extends REST_Controller {
             } catch (Exception $ex) {
                 throw new Exception('Error in VendorLogin function - ' . $ex);
             }     
+    }
+
+    function mybookings_post() {
+        try {
+                $allowParam = array(
+                    'user_id'
+                );
+          
+                if (checkselectedparams($this->post(), $allowParam)) {
+                    $bookings = array();
+                    $bookings = $this->usermodel->getBookingByUser($this->post('user_id'));
+                    if ($bookings) {
+                        $MESSAGE = "Booking List";
+                        $responseCode = 200;
+                     } else {
+                        $MESSAGE = MSG304;
+                        $responseCode = 304;
+                     }
+                } else {
+                    $MESSAGE = MSG302;
+                    $responseCode = 302;
+                }
+               
+                $resp = array( 
+                            'responseMessage' => $MESSAGE,
+                            'responseCode'    => $responseCode,
+                            'bookings' => $bookings
+                        );
+               
+                $this->response($resp, 200);
+            } catch (Exception $ex) {
+                throw new Exception('Error in VendorLogin function - ' . $ex);
+            }   
     }
     
 }

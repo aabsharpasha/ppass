@@ -230,6 +230,11 @@ class Usermodel extends CI_Model {
         return $this->db->get_where('user_vehicles', array('user_id' => $user_id))->result();
     }
 
+    function getBookingByUser($user_id)
+    {
+        return $this->db->get_where('customer_booking', array('user_id' => $user_id))->result();
+    }
+
     function add_vehicle($post) 
     {
         $data = array(
