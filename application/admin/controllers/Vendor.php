@@ -12,7 +12,251 @@ class Vendor extends CI_Controller {
           
         }
 
-       
+function download_pdf_victor($id, $vendor_id) 
+        {
+                    $filename = "ppass_".time();
+                    $pdfFilePath = FCPATH."downloads/reports/$filename.pdf";
+                    $data['page_title'] = 'PPASS'; // pass data to the view
+
+                    if (file_exists($pdfFilePath) == FALSE)
+                    {
+      
+                        $where = array('checkin_details.checkin_id' => $id);
+                         $this->db->select('checkin_details.checkin_id, checkin_details.vehicle_no, checkin_details.vehicle_model, checkout_details.duration_occupied, checkin_details.checkin_time, checkout_details.checkout_time, checkout_details.paid_amount, checkout_details.checkout_time, checkin_details.is_checkout')
+                         ->from('checkin_details')
+                         ->join('checkout_details', 'checkin_details.checkin_id = checkout_details.checkin_id', left)->where($where);
+                        $result = $this->db->get();
+                         // echo $this->db->last_query();
+                          $res = $result->result();
+                          if($res) {
+                            $location = $this->get_vendor_details($vendor_id);
+                            $pricing = $this->db->get_where('pricing_details', array('vendor_id' => $vendor_id))->row();
+                            foreach($res as $line) {
+                              $ret_str = $this->get_recipet_details_str($line, $location, $pricing, $vendor_id);
+                              }
+                          }
+                          $css = $this->get_pdf_css();
+                          $html = $css.$ret_str; // render the view into HTML
+                    
+                        $this->load->library('pdf');
+                        $pdf = $this->pdf->load();
+                        $pdf->SetFooter($_SERVER['HTTP_HOST'].'|PARKINGPASS|'.date("d-m-Y h:i A")); 
+                        $pdf->SetDisplayMode('fullpage');
+                        $pdf->WriteHTML($html); // write the HTML into the PDF
+                        $pdf->debug = true;
+                        $pdf->Output(); exit;
+                     // $pdf->Output($pdfFilePath, 'F'); // save to file because we can
+
+                    }
+
+                    redirect("/downloads/reports/$filename.pdf");
+         }
+
+        function get_recipet_details_str($line, $location, $pricing, $vendor_id) 
+        {
+                  $ret_str =  '<div id="d-wrapper" style="width:400px;text-align:center;border:1px solid #1ba1e2;">
+                                          <div class="zig-zag-bottom">
+                                          </div>
+                                          <div class="recpt">
+                                           <div class="Order-logo"> <img src="'.base_url().'assets/img/logo.png" alt=""><h4>ParkingPass</h4></div>
+                                              <div class="detail-rcpt">
+                                                <div class="vendor-dtl">'.$location->vendor_name.' ('.$vendor_id.')</div>
+                                                <div>'.$location->vendor_address.'</div>
+                                                <br />
+                                                <div>Auth. By: '.AUTHBY.'</div>';
+                                                if($line->is_checkout) {
+                                                  $ret_str .= '<div>GSTIN NO: '.GSTIN.'</div>';
+                                                }
+                                                $ret_str .= '<div></div>
+                                                <div>Date: '.date("d-m-Y",strtotime($line->checkin_time)).', In Time: '.date("h:i A",strtotime($line->checkin_time)).'</div>';
+                                                if($line->is_checkout) {
+                                                    $ret_str .= '<div>Out: </span>  <span class="cols-3">'.date("h:i A",strtotime($line->checkin_time)).', Duration: '.$line->duration_occupied.'</div>';
+                                                }
+                                                $vehicle_details = ($line->vehicle_model ? '('.$line->vehicle_model.')' : $line->vehicle_no);
+                                               $ret_str .= '<div><strong>Veh.: '.$vehicle_details.'</strong></div>';
+                                              if($line->is_checkout) {
+                                                  $ret_str .= '<div><strong>AMT PAID: Rs '.$line->paid_amount.'</strong><br />All fees and tax inclusive!</div>';
+                                              } else {
+                                                  if($line->vehicle_size == 1) {
+                                                       $charges = "Rs ".$pricing->small_first_hr_rate." + ".$pricing->small_hourly_rate;
+                                                  } else {
+                                                       $charges = "Rs ".$pricing->big_first_hr_rate." + ".$pricing->big_hourly_rate; 
+                                                  }
+                                                   $ret_str .= '<div>Charges: '.$charges.' per hour</div>';
+                                              }
+                                                
+                                              $ret_str .= '</br>
+                                                <div>ppass-000'.$line->checkin_id.'</div>
+                                                </br>';
+
+                                              
+                                                  if($line->is_checkout) {
+                                                      $ret_str .= '<p>Parking at owner\'s risk.<br />Thanks for using e-bill sponsored by:<br />'.SPONSEREDBY.'</p>';
+                                                  } else {
+                                                        $ret_str .= '<p>Parking at owner\'s risk. Please check your vehicle number & report if incorrect.<br />Thanks for using e-bill sponsored by:<br />'.SPONSEREDBY.'</p>';
+                                                  }
+                                            $ret_str .= '</div>
+                                              </div>
+                                              <div class="zig-zag-top">
+                                              </div>
+                                              </div>';
+              
+
+                                              return $ret_str;
+
+          }
+
+
+        function get_pdf_css() {
+
+          $css = '<style>
+          .list-download{border-top: 1px solid;
+padding: 5px;
+margin: 5px;
+list-style: none;
+
+}
+.selection {
+  display: block !important;
+}
+
+#select2-vendors-container {
+font-size: 15px !important;
+}
+.list-download div span {font-size: 17px !important;}
+#result  {
+    list-style: none !important;
+    font-family: Courier;
+    color: #0a0a0a;
+    overflow: hidden;
+  /*  border-bottom: 1px solid #a2a2a3;*/
+    padding: 7px 0;
+    line-height: 1.2;
+}
+
+#d-wrapper {
+    background-color: #fff;
+    margin-bottom: 2px;
+    width: 414px;
+    margin: auto;
+}
+#d-wrapper * {
+
+margin:0;
+padding:0;}
+.center {text-align: center;}
+#d-wrapper  div.sep {
+    min-height: 200px;
+    padding: 32px 0;
+
+  }
+
+#d-wrapper  .zig-zag-top:before{
+    background-gradient:linear -45deg #1ba1e2 16px, red 16px blue 16px  transparent 0;
+    background-gradient:linear 45deg #1ba1e2 16px  transparent 0;
+        background-position: left top;
+        background-repeat: repeat-x;
+        background-size: 22px 32px;
+        content: " ";
+        display: block;
+
+        height: 32px;
+    width: 100%;
+
+    position: relative;
+    bottom: 64px;
+    left:0;
+  }
+
+  .downlink {color: #fff;
+font-style: underline;
+padding: 15px !important;
+float: right;
+margin: 20px;
+font:arial;}
+
+#d-wrapper  div > * {
+   /* margin: 0 19px;*/
+    text-align:center;
+  }
+
+#d-wrapper  .zig-zag-bottom{
+    margin: 32px 0;
+    margin-top: 0;
+    background: #1ba1e2;
+  }
+
+#d-wrapper  .zig-zag-top{
+    margin: 32px 0;
+    margin-bottom: 0;
+      background: #1ba1e2;
+  }
+
+#d-wrapper  .zig-zag-bottom,
+#d-wrapper  .zig-zag-top{
+        padding: 32px 0;
+  }
+
+#d-wrapper  h1{
+      font-size:2em;
+      text-align:center;
+      color:#fff;
+      font-family:"PT Sans Narrow", "Fjalla One", sans-serif;
+      font-weight:900;
+      text-shadow:1px 1px 0 #1b90e2, 2px 2px 0 #1b90e2, 3px 3px 0 #1b90e2, 4px 4px 0 #1b90e2, 5px 5px 0 #1b90e2;
+
+  }
+
+#d-wrapper  div.sep p,
+#d-wrapper  div.sep h1 {
+    text-shadow:1px 1px 0 #888, 2px 2px 0 #888, 3px 3px 0 #888, 4px 4px 0 #888, 5px 5px 0 #888;
+    color: #fff;
+  }
+
+#d-wrapper  h1{
+     font-size:4em;
+  }
+
+#d-wrapper  .zig-zag-bottom:after{
+    background-gradient: linear -45deg transparent 16px #1ba1e2 0; 
+    background-gradient: linear 45deg transparent 16px #1ba1e2  0;
+        background-repeat: repeat-x;
+    background-position: left bottom;
+        background-size: 22px 32px;
+        content: "";
+        display: block;
+
+    width: 100%;
+    height: 32px;
+
+      position: relative;
+    top:64px;
+    left:0px;
+  }
+
+#d-wrapper  p{
+    text-align: center;
+  }
+
+#d-wrapper  p:not(:last-child) {
+    margin-bottom: 20px;
+  }
+
+
+p {
+  text-align: center;
+  
+  
+}
+.auth{
+  text-decoration: overline;
+  color: #999;
+  font-size: 2em;
+}</style>';
+
+
+return $css;
+        }       
         function get_vendor_details($vendor_id) {
           $res = $this->db->get_where('vendors', array('vendor_id' => $vendor_id));
           return $res->row();
@@ -153,6 +397,9 @@ class Vendor extends CI_Controller {
 
         function download_pdf($id, $vendor_id) 
         {
+if($_REQUEST['debug']) {
+$this->download_pdf_victor($id, $vendor_id); exit;
+}
                     $filename = "ppass_".time();
                     $pdfFilePath = FCPATH."downloads/reports/$filename.pdf";
                     $data['page_title'] = 'PPASS'; // pass data to the view
